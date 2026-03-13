@@ -62,25 +62,40 @@ block-game/
 - Sounds synthesized with Web Audio API — no asset files to load
 - Single canvas overlay for particles, everything else is CSS
 
+## Constants
+
+```typescript
+const BOARD_SIZE = 10
+```
+
 ## Types
 
 ```typescript
 type BlockColor = 'purple' | 'orange' | 'yellow' | 'green' | 'gray' | 'blue' | 'pink'
 
+type ShapeType = 'single' | 'line2h' | 'line2v' | 'line3h' | 'line3v' | 'line4h' | 'line4v'
+  | 'line5h' | 'line5v' | 'square2' | 'square3'
+  | 'L1' | 'L2' | 'L3' | 'L4'    // 4 L-shape mirror variants
+  | 'T1' | 'T2' | 'T3' | 'T4'    // 4 T-shape orientations
+  | 'Z1' | 'Z2' | 'S1' | 'S2'    // Z and S orientations
+
 type Piece = {
-  id: string
-  color: BlockColor
-  cells: readonly { row: number; col: number }[]  // relative to anchor
+  id: string             // generated via crypto.randomUUID()
+  shape: ShapeType
+  color: BlockColor      // randomized per piece generation
+  cells: readonly { row: number; col: number }[]  // relative to top-left anchor
 }
 
 type GameState = {
-  board: (BlockColor | null)[][]
+  board: (BlockColor | null)[][]  // BOARD_SIZE x BOARD_SIZE
   pieces: [Piece | null, Piece | null, Piece | null]
   score: number
-  highScore: number
-  comboMultiplier: number
-  gameOver: boolean
+  highScore: number      // written to localStorage whenever score > highScore
+  comboMultiplier: number // initial value: 1
+  gameOver: boolean       // initial value: false
 }
+
+// Initial state: empty board (all null), 3 random pieces, score 0, highScore from localStorage, comboMultiplier 1, gameOver false
 
 type DragState = {
   draggedPieceIndex: number | null
@@ -92,8 +107,17 @@ type ClearResult = {
   clearedRows: number[]
   clearedCols: number[]
   clearedCells: { row: number; col: number }[]
+  linesCleared: number   // = clearedRows.length + clearedCols.length
 }
 ```
+
+### Hook Interaction Contract
+
+- `useGameState` owns `GameState` via `useReducer`. It exposes a `dispatch` function with actions: `PLACE_PIECE`, `NEW_GAME`.
+- `useDragDrop` owns `DragState` via `useState`. It reads `GameState` (board + pieces) to compute placement validity.
+- On pointer-up with a valid placement, `useDragDrop` calls `dispatch({ type: 'PLACE_PIECE', pieceIndex, position })` and resets its own drag state.
+- `useGameState` reducer handles all game logic: stamping, clearing, scoring, combo, game-over check.
+- `useAudio` subscribes to state changes and plays sounds reactively (e.g., when `comboMultiplier` increases, when `gameOver` becomes true).
 
 ## Game Flow (Per Placement)
 
@@ -102,28 +126,30 @@ type ClearResult = {
 3. Add placement score (`+1 per block`)
 4. Find all full rows AND all full columns in one pass
 5. Build union set of cells to clear — clear simultaneously
-6. Add clear score: `10 * linesCleared^2 * comboMultiplier`
-7. Update combo (increment if cleared, reset to 1 if not)
-8. Remove piece from queue slot (set to `null`)
-9. If all 3 slots are `null`, generate next 3 pieces
-10. Check if any remaining piece fits anywhere on the board
-11. If none fit, `gameOver = true`
+6. Compute `linesCleared = clearedRows.length + clearedCols.length` (rows + columns both count)
+7. Add clear score: `10 * linesCleared * linesCleared * comboMultiplier`
+8. Update combo: if `linesCleared >= 1`, increment `comboMultiplier` by 1; otherwise reset to `1`
+9. Remove piece from queue slot (set to `null`)
+10. If all 3 slots are `null`, generate next 3 pieces
+11. Check if any remaining piece fits anywhere on the board
+12. If none fit, `gameOver = true` — show Game Over overlay with final score, high score, and "Play Again" button
 
 ## Scoring
 
-| Action | Formula |
-|--------|---------|
-| Place a piece | `+1` per block in the piece |
-| Clear lines | `10 * linesCleared * linesCleared` |
-| Combo multiplier | Multiply clear score by current `comboMultiplier` |
+**Single unified formula per placement:**
+- Placement score: `+1 per block` in the piece
+- Clear score: `10 * linesCleared * linesCleared * comboMultiplier`
+- Where `linesCleared = clearedRows.length + clearedCols.length` (both count)
+- Total score gain = placement score + clear score
 
 **Combo rules:**
 - `comboMultiplier` starts at `1`
 - If placement clears >= 1 line: use current multiplier for scoring, then increment by 1
 - If placement clears 0 lines: reset to `1`
 
-**Example:** Place a 5-block piece, clear 2 lines, combo is currently 3:
-- Score gain = `5 + (10 * 2 * 2) * 3 = 5 + 120 = 125`
+**Example:** Place a 5-block piece, clear 1 row + 1 column (linesCleared = 2), combo is currently 3:
+- Score gain = `5 + (10 * 2 * 2 * 3) = 5 + 120 = 125`
+- Then comboMultiplier becomes 4
 
 ## Piece Definitions
 
@@ -137,7 +163,13 @@ Full classic set:
 
 Pieces are not rotatable. Each orientation is a distinct piece in the pool.
 
-Random generation is pure random for v1. Weighted distribution is a future tuning option.
+Pieces are not rotatable. Each orientation is a distinct piece in the pool. Total: ~21 distinct shapes.
+
+**Color assignment:** randomized per piece generation (not fixed per shape type).
+
+**Generation rules (v1):** All shapes equally likely. Duplicates within a single deal of 3 are allowed. Weighted distribution is a future tuning option.
+
+**Piece ID generation:** `crypto.randomUUID()` per piece instance.
 
 ## Visual Design
 
@@ -187,6 +219,7 @@ Random generation is pure random for v1. Weighted distribution is a future tunin
 - Line clear: colored squares scatter outward from cleared cells
 - Multi-line clear: more particles + brief screen shake
 - Particles fade over ~500ms
+- Canvas must match board container dimensions and re-sync on viewport resize
 
 ### Screen Shake
 - On 2+ line clears: translate board container randomly 2-4px for ~200ms
@@ -223,8 +256,13 @@ All sounds synthesized at runtime. Single `AudioContext` created on first user i
 
 ## Data Persistence
 
+### New Game
+- Game Over overlay shows "Play Again" button
+- `NEW_GAME` action resets board, score, comboMultiplier, generates fresh 3 pieces
+- High score is preserved (not reset)
+
 ### Phase 1 (This Build)
-- High score saved to `localStorage`
+- High score saved to `localStorage` whenever `score > highScore`
 - Persists across sessions
 - Displayed alongside current score
 
