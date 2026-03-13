@@ -32,9 +32,30 @@ export function useDragDrop({ board, onDrop, boardRef }: UseDragDropOptions) {
     const padding = parseFloat(getComputedStyle(boardEl).padding) || 6
     const innerWidth = rect.width - padding * 2
     const innerHeight = rect.height - padding * 2
-    const col = Math.floor(((clientX - rect.left - padding) / innerWidth) * BOARD_SIZE)
-    const row = Math.floor(((clientY - rect.top - padding - FINGER_OFFSET) / innerHeight) * BOARD_SIZE)
-    if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) return null
+    // Offset by piece center so the cursor targets the middle of the piece, not its top-left
+    const piece = dragPieceRef.current
+    const pieceRowOffset = piece ? Math.max(...piece.cells.map(c => c.row)) / 2 : 0
+    const pieceColOffset = piece ? Math.max(...piece.cells.map(c => c.col)) / 2 : 0
+    const rawCol = Math.floor(((clientX - rect.left - padding) / innerWidth) * BOARD_SIZE - pieceColOffset)
+    const rawRow = Math.floor(((clientY - rect.top - padding - FINGER_OFFSET) / innerHeight) * BOARD_SIZE - pieceRowOffset)
+
+    // Clamp to board bounds, accounting for piece dimensions so it snaps
+    // to the closest valid edge position when dragging near/outside borders
+    const maxRow = piece ? BOARD_SIZE - 1 - Math.max(...piece.cells.map(c => c.row)) : BOARD_SIZE - 1
+    const maxCol = piece ? BOARD_SIZE - 1 - Math.max(...piece.cells.map(c => c.col)) : BOARD_SIZE - 1
+    const row = Math.max(0, Math.min(rawRow, maxRow))
+    const col = Math.max(0, Math.min(rawCol, maxCol))
+
+    // Cancel if majority of piece cells would be off-board at the raw (unclamped) position
+    if (piece) {
+      const offBoard = piece.cells.filter(c => {
+        const r = rawRow + c.row
+        const cc = rawCol + c.col
+        return r < 0 || r >= BOARD_SIZE || cc < 0 || cc >= BOARD_SIZE
+      }).length
+      if (offBoard > piece.cells.length / 2) return null
+    }
+
     return { row, col }
   }, [boardRef])
 

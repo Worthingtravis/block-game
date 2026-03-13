@@ -1,8 +1,9 @@
-import { useReducer, useCallback } from 'react'
+import { useReducer, useCallback, useEffect, useRef } from 'react'
 import type { GameState, GameAction, Cell } from '../game/types'
 import { createEmptyBoard, isValidPlacement, stampPiece, findClears, applyClear, canAnyPieceFit } from '../game/engine'
 import { calculatePlacementScore, calculateClearScore, updateCombo } from '../game/scoring'
-import { generatePieceSet } from '../game/pieces'
+import { generatePieceSet, generateFairPieceSet } from '../game/pieces'
+import { getStateFromUrl, setStateToUrl } from '../game/serialize'
 
 const HIGH_SCORE_KEY = 'block-blast-high-score'
 
@@ -18,6 +19,23 @@ function saveHighScore(score: number): void {
 }
 
 export function createInitialState(): GameState {
+  const urlState = getStateFromUrl()
+  if (urlState) {
+    console.log('[block-game] Loaded state from URL hash', {
+      filledCells: urlState.board?.flat().filter(c => c !== null).length,
+      pieces: urlState.pieces?.map(p => p ? `${p.shape}:${p.color}` : '_'),
+    })
+    return {
+      board: urlState.board ?? createEmptyBoard(),
+      pieces: urlState.pieces ?? generatePieceSet(),
+      score: urlState.score ?? 0,
+      highScore: loadHighScore(),
+      comboMultiplier: urlState.comboMultiplier ?? 1,
+      gameOver: false,
+      lastClear: null,
+    }
+  }
+  console.log('[block-game] Fresh game (no URL hash found)')
   return {
     board: createEmptyBoard(),
     pieces: generatePieceSet(),
@@ -52,7 +70,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       pieces[pieceIndex] = null
 
       const allPlaced = pieces.every(p => p === null)
-      const nextPieces = allPlaced ? generatePieceSet() : pieces
+      const nextPieces = allPlaced ? generateFairPieceSet(board) : pieces
 
       let highScore = state.highScore
       if (score > highScore) {
@@ -72,6 +90,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...createInitialState(), highScore: state.highScore }
     }
 
+    case 'LOAD_STATE': {
+      return { ...action.state, highScore: Math.max(state.highScore, action.state.score) }
+    }
+
     default:
       return state
   }
@@ -85,5 +107,43 @@ export function useGameState() {
   const newGame = useCallback(() => {
     dispatch({ type: 'NEW_GAME' })
   }, [])
-  return { state, placePiece, newGame }
+  const loadState = useCallback((s: GameState) => {
+    dispatch({ type: 'LOAD_STATE', state: s })
+  }, [])
+
+  // Sync state to URL hash so it can be shared/bookmarked.
+  // Use replaceState (doesn't fire hashchange) to avoid loops.
+  const suppressHashChange = useRef(false)
+  useEffect(() => {
+    suppressHashChange.current = true
+    setStateToUrl(state)
+    // replaceState doesn't fire hashchange, but guard just in case
+    requestAnimationFrame(() => { suppressHashChange.current = false })
+  }, [state])
+
+  // Listen for hash changes (e.g. pasting a debug URL while page is open)
+  useEffect(() => {
+    const onHashChange = () => {
+      if (suppressHashChange.current) return
+      const urlState = getStateFromUrl()
+      if (urlState) {
+        dispatch({
+          type: 'LOAD_STATE',
+          state: {
+            board: urlState.board ?? createEmptyBoard(),
+            pieces: urlState.pieces ?? generatePieceSet(),
+            score: urlState.score ?? 0,
+            highScore: loadHighScore(),
+            comboMultiplier: urlState.comboMultiplier ?? 1,
+            gameOver: false,
+            lastClear: null,
+          },
+        })
+      }
+    }
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [])
+
+  return { state, placePiece, newGame, loadState }
 }

@@ -1,5 +1,6 @@
-import type { Cell, Piece, ShapeType, BlockColor } from './types'
+import type { Board, Cell, Piece, ShapeType, BlockColor } from './types'
 import { BLOCK_COLORS } from './types'
+import { canAllPiecesFit } from './engine'
 
 export const SHAPE_DEFINITIONS: Record<ShapeType, readonly Cell[]> = {
   single: [{ row: 0, col: 0 }],
@@ -106,4 +107,16 @@ export function generatePiece(): Piece {
 
 export function generatePieceSet(): [Piece, Piece, Piece] {
   return [generatePiece(), generatePiece(), generatePiece()]
+}
+
+const MAX_FAIR_ATTEMPTS = 50
+
+export function generateFairPieceSet(board: Board): [Piece, Piece, Piece] {
+  let last = generatePieceSet()
+  for (let i = 0; i < MAX_FAIR_ATTEMPTS; i++) {
+    const candidate = i === 0 ? last : generatePieceSet()
+    last = candidate
+    if (canAllPiecesFit(board, [...candidate])) return candidate
+  }
+  return last
 }

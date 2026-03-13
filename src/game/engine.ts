@@ -66,6 +66,24 @@ export function applyClear(board: Board, clearResult: ClearResult): Board {
   return newBoard
 }
 
+export function canAllPiecesFit(board: Board, pieces: Piece[]): boolean {
+  if (pieces.length === 0) return true
+  for (let i = 0; i < pieces.length; i++) {
+    const piece = pieces[i]
+    const rest = [...pieces.slice(0, i), ...pieces.slice(i + 1)]
+    for (let row = 0; row < BOARD_SIZE; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        if (!isValidPlacement(board, piece, { row, col })) continue
+        let nextBoard = stampPiece(board, piece, { row, col })
+        const clears = findClears(nextBoard)
+        if (clears.linesCleared > 0) nextBoard = applyClear(nextBoard, clears)
+        if (canAllPiecesFit(nextBoard, rest)) return true
+      }
+    }
+  }
+  return false
+}
+
 export function canAnyPieceFit(board: Board, pieces: (Piece | null)[]): boolean {
   for (const piece of pieces) {
     if (piece === null) continue

@@ -1,4 +1,4 @@
-export const BOARD_SIZE = 10
+export const BOARD_SIZE = 8
 
 export const BLOCK_COLORS = ['purple', 'orange', 'yellow', 'green', 'gray', 'blue', 'pink'] as const
 export type BlockColor = (typeof BLOCK_COLORS)[number]
@@ -51,3 +51,4 @@ export type ClearResult = {
 export type GameAction =
   | { type: 'PLACE_PIECE'; pieceIndex: number; position: Cell }
   | { type: 'NEW_GAME' }
+  | { type: 'LOAD_STATE'; state: GameState }

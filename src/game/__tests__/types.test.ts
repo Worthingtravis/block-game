@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { BOARD_SIZE, BLOCK_COLORS } from '../types'
 
 describe('constants', () => {
-  it('BOARD_SIZE is 10', () => {
-    expect(BOARD_SIZE).toBe(10)
+  it('BOARD_SIZE is 8', () => {
+    expect(BOARD_SIZE).toBe(8)
   })
 
   it('has 7 block colors', () => {

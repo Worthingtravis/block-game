@@ -6,6 +6,8 @@ import ScoreDisplay from './components/ScoreDisplay'
 import GameOver from './components/GameOver'
 import ParticleCanvas from './components/ParticleCanvas'
 import type { ParticleCanvasHandle } from './components/ParticleCanvas'
+import { BOARD_SIZE } from './game/types'
+import type { Cell as CellType } from './game/types'
 import { useGameState } from './hooks/useGameState'
 import { useDragDrop } from './hooks/useDragDrop'
 import { useAudio } from './hooks/useAudio'
@@ -18,6 +20,7 @@ export default function App() {
   const particleRef = useRef<ParticleCanvasHandle>(null)
   const [boardSize, setBoardSize] = useState({ width: 400, height: 400 })
   const [shaking, setShaking] = useState(false)
+  const [clearingCells, setClearingCells] = useState<CellType[]>([])
 
   useAudio(state)
 
@@ -78,13 +81,22 @@ export default function App() {
 
     const rect = el.getBoundingClientRect()
     const padding = parseFloat(getComputedStyle(el).padding) || 6
-    const cellW = (rect.width - padding * 2) / 10
-    const cellH = (rect.height - padding * 2) / 10
+    const cellW = (rect.width - padding * 2) / BOARD_SIZE
+    const cellH = (rect.height - padding * 2) / BOARD_SIZE
 
     for (const cell of clear.clearedCells) {
       const x = padding + cell.col * cellW + cellW / 2
       const y = padding + cell.row * cellH + cellH / 2
       particleRef.current.emit(x, y, '#ffffff', clear.linesCleared >= 2 ? 6 : 3)
+    }
+  }, [state.lastClear])
+
+  // Track clearing cells with timed cleanup so animation doesn't permanently hide them
+  useEffect(() => {
+    if (state.lastClear && state.lastClear.linesCleared > 0) {
+      setClearingCells(state.lastClear.clearedCells)
+      const timer = setTimeout(() => setClearingCells([]), 300)
+      return () => clearTimeout(timer)
     }
   }, [state.lastClear])
 
@@ -123,7 +135,7 @@ export default function App() {
           previewCells={previewCells}
           previewColor={draggedPiece?.color}
           previewValid={dragState.placementValidity}
-          clearingCells={state.lastClear?.clearedCells}
+          clearingCells={clearingCells.length > 0 ? clearingCells : undefined}
         />
         <ParticleCanvas ref={particleRef} width={boardSize.width} height={boardSize.height} />
       </div>

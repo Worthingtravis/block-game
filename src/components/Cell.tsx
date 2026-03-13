@@ -18,14 +18,19 @@ const COLOR_MAP: Record<BlockColor, { main: string; light: string; dark: string 
 }
 
 export default function Cell({ color, preview, invalid, size }: CellProps) {
+  const w = size ?? '100%'
+  const h = size ?? undefined
+  const aspect = size ? undefined : ('1' as const)
+
   if (preview && !invalid) {
     const colors = COLOR_MAP[preview]
     return (
       <div
         className="cell cell--preview"
         style={{
-          width: size,
-          height: size,
+          width: w,
+          height: h,
+          aspectRatio: aspect,
           backgroundColor: colors.main,
           opacity: 0.4,
           borderRadius: 'var(--cell-radius)',
@@ -39,8 +44,9 @@ export default function Cell({ color, preview, invalid, size }: CellProps) {
       <div
         className="cell cell--invalid"
         style={{
-          width: size,
-          height: size,
+          width: w,
+          height: h,
+          aspectRatio: aspect,
           backgroundColor: '#ff000030',
           borderRadius: 'var(--cell-radius)',
         }}
@@ -53,8 +59,9 @@ export default function Cell({ color, preview, invalid, size }: CellProps) {
       <div
         className="cell cell--empty"
         style={{
-          width: size,
-          height: size,
+          width: w,
+          height: h,
+          aspectRatio: aspect,
           backgroundColor: 'var(--bg-cell-empty)',
           borderRadius: 'var(--cell-radius)',
         }}
@@ -67,8 +74,9 @@ export default function Cell({ color, preview, invalid, size }: CellProps) {
     <div
       className="cell cell--filled"
       style={{
-        width: size,
-        height: size,
+        width: w,
+        height: h,
+        aspectRatio: aspect,
         borderRadius: 'var(--cell-radius)',
         background: `linear-gradient(135deg, ${colors.light} 0%, ${colors.main} 40%, ${colors.dark} 100%)`,
         boxShadow: `inset 2px 2px 4px ${colors.light}40, inset -2px -2px 4px ${colors.dark}80, 0 2px 4px rgba(0,0,0,0.3)`,

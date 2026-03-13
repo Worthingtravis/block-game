@@ -29,12 +29,20 @@ describe('gameReducer PLACE_PIECE', () => {
 
   it('generates new pieces when all 3 are placed', () => {
     let state = createInitialState()
+    // Place each piece in its own column band to avoid overlap
     for (let i = 0; i < 3; i++) {
-      state = gameReducer(state, {
-        type: 'PLACE_PIECE',
-        pieceIndex: i,
-        position: { row: i * 3, col: 0 },
-      })
+      const piece = state.pieces[i]!
+      const maxRow = Math.max(...piece.cells.map(c => c.row))
+      const maxCol = Math.max(...piece.cells.map(c => c.col))
+      // Find a valid position: stack vertically, offset by column
+      let placed = false
+      for (let row = 0; row <= BOARD_SIZE - 1 - maxRow && !placed; row++) {
+        for (let col = 0; col <= BOARD_SIZE - 1 - maxCol && !placed; col++) {
+          const next = gameReducer(state, { type: 'PLACE_PIECE', pieceIndex: i, position: { row, col } })
+          if (next !== state) { state = next; placed = true }
+        }
+      }
+      expect(placed).toBe(true)
     }
     const nonNull = state.pieces.filter(p => p !== null)
     expect(nonNull.length).toBe(3)

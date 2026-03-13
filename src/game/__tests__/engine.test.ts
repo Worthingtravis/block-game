@@ -29,12 +29,12 @@ describe('isValidPlacement', () => {
 
   it('returns true for placement at bottom-right that fits', () => {
     const board = createEmptyBoard()
-    expect(isValidPlacement(board, testPiece, { row: 9, col: 7 })).toBe(true)
+    expect(isValidPlacement(board, testPiece, { row: BOARD_SIZE - 1, col: BOARD_SIZE - 3 })).toBe(true)
   })
 
   it('returns false when piece goes out of bounds (right)', () => {
     const board = createEmptyBoard()
-    expect(isValidPlacement(board, testPiece, { row: 0, col: 8 })).toBe(false)
+    expect(isValidPlacement(board, testPiece, { row: 0, col: BOARD_SIZE - 2 })).toBe(false)
   })
 
   it('returns false when piece goes out of bounds (bottom)', () => {
@@ -43,7 +43,7 @@ describe('isValidPlacement', () => {
       id: 'test-v', shape: 'line3v', color: 'green',
       cells: [{ row: 0, col: 0 }, { row: 1, col: 0 }, { row: 2, col: 0 }],
     }
-    expect(isValidPlacement(board, vertPiece, { row: 8, col: 0 })).toBe(false)
+    expect(isValidPlacement(board, vertPiece, { row: BOARD_SIZE - 2, col: 0 })).toBe(false)
   })
 
   it('returns false when cell is already occupied', () => {
@@ -99,7 +99,7 @@ describe('findClears', () => {
     expect(result.clearedRows).toEqual([3])
     expect(result.clearedCols).toEqual([5])
     expect(result.linesCleared).toBe(2)
-    expect(result.clearedCells).toHaveLength(19) // 10+10-1 intersection
+    expect(result.clearedCells).toHaveLength(BOARD_SIZE * 2 - 1) // row+col minus intersection
   })
 })
 
