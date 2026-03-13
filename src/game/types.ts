@@ -32,6 +32,7 @@ export type GameState = {
   highScore: number
   comboMultiplier: number
   gameOver: boolean
+  lastClear: ClearResult | null
 }
 
 export type DragState = {
