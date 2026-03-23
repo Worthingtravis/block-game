@@ -1,6 +1,6 @@
 export const BOARD_SIZE = 8
 
-export const BLOCK_COLORS = ['purple', 'orange', 'yellow', 'green', 'gray', 'blue', 'pink'] as const
+export const BLOCK_COLORS = ['purple', 'orange', 'yellow', 'green', 'gray', 'blue', 'pink', 'red', 'teal', 'lime', 'indigo'] as const
 export type BlockColor = (typeof BLOCK_COLORS)[number]
 
 export type ShapeType =

@@ -1,5 +1,4 @@
 import type { Board, Cell, Piece, ShapeType, BlockColor } from './types'
-import { BLOCK_COLORS } from './types'
 import { canAllPiecesFit } from './engine'
 
 export const SHAPE_DEFINITIONS: Record<ShapeType, readonly Cell[]> = {
@@ -87,8 +86,18 @@ export const SHAPE_DEFINITIONS: Record<ShapeType, readonly Cell[]> = {
 
 const ALL_SHAPES = Object.keys(SHAPE_DEFINITIONS) as ShapeType[]
 
-function randomColor(): BlockColor {
-  return BLOCK_COLORS[Math.floor(Math.random() * BLOCK_COLORS.length)]
+// Deterministic shape-to-color mapping — each shape family gets a unique color
+const SHAPE_COLOR_MAP: Record<ShapeType, BlockColor> = {
+  single: 'gray',
+  line2h: 'teal', line2v: 'teal',
+  line3h: 'blue', line3v: 'blue',
+  line4h: 'indigo', line4v: 'indigo',
+  line5h: 'pink', line5v: 'pink',
+  square2: 'orange', square3: 'yellow',
+  L1: 'green', L2: 'green', L3: 'green', L4: 'green',
+  T1: 'purple', T2: 'purple', T3: 'purple', T4: 'purple',
+  Z1: 'red', Z2: 'red',
+  S1: 'lime', S2: 'lime',
 }
 
 function randomShape(): ShapeType {
@@ -100,7 +109,7 @@ export function generatePiece(): Piece {
   return {
     id: crypto.randomUUID(),
     shape,
-    color: randomColor(),
+    color: SHAPE_COLOR_MAP[shape],
     cells: SHAPE_DEFINITIONS[shape],
   }
 }

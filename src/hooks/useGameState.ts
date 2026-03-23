@@ -15,27 +15,24 @@ function loadHighScore(): number {
 }
 
 function saveHighScore(score: number): void {
-  try { localStorage.setItem(HIGH_SCORE_KEY, String(score)) } catch {}
+  try { localStorage.setItem(HIGH_SCORE_KEY, String(score)) } catch { /* localStorage unavailable */ }
 }
 
-export function createInitialState(): GameState {
-  const urlState = getStateFromUrl()
-  if (urlState) {
-    console.log('[block-game] Loaded state from URL hash', {
-      filledCells: urlState.board?.flat().filter(c => c !== null).length,
-      pieces: urlState.pieces?.map(p => p ? `${p.shape}:${p.color}` : '_'),
-    })
-    return {
-      board: urlState.board ?? createEmptyBoard(),
-      pieces: urlState.pieces ?? generatePieceSet(),
-      score: urlState.score ?? 0,
-      highScore: loadHighScore(),
-      comboMultiplier: urlState.comboMultiplier ?? 1,
-      gameOver: false,
-      lastClear: null,
-    }
+function stateFromUrl(): GameState | null {
+  const url = getStateFromUrl()
+  if (!url) return null
+  return {
+    board: url.board ?? createEmptyBoard(),
+    pieces: url.pieces ?? generatePieceSet(),
+    score: url.score ?? 0,
+    highScore: loadHighScore(),
+    comboMultiplier: url.comboMultiplier ?? 1,
+    gameOver: false,
+    lastClear: null,
   }
-  console.log('[block-game] Fresh game (no URL hash found)')
+}
+
+function freshState(): GameState {
   return {
     board: createEmptyBoard(),
     pieces: generatePieceSet(),
@@ -45,6 +42,10 @@ export function createInitialState(): GameState {
     gameOver: false,
     lastClear: null,
   }
+}
+
+export function createInitialState(): GameState {
+  return stateFromUrl() ?? freshState()
 }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
@@ -63,8 +64,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         board = applyClear(board, clears)
       }
 
-      score += calculateClearScore(clears.linesCleared, state.comboMultiplier)
       const comboMultiplier = updateCombo(clears.linesCleared, state.comboMultiplier)
+      score += calculateClearScore(clears, comboMultiplier)
 
       const pieces = [...state.pieces] as [typeof state.pieces[0], typeof state.pieces[1], typeof state.pieces[2]]
       pieces[pieceIndex] = null
@@ -87,7 +88,15 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'NEW_GAME': {
-      return { ...createInitialState(), highScore: state.highScore }
+      return {
+        board: createEmptyBoard(),
+        pieces: generatePieceSet(),
+        score: 0,
+        highScore: state.highScore,
+        comboMultiplier: 1,
+        gameOver: false,
+        lastClear: null,
+      }
     }
 
     case 'LOAD_STATE': {
@@ -111,35 +120,20 @@ export function useGameState() {
     dispatch({ type: 'LOAD_STATE', state: s })
   }, [])
 
-  // Sync state to URL hash so it can be shared/bookmarked.
-  // Use replaceState (doesn't fire hashchange) to avoid loops.
+  // Sync state to URL hash — replaceState doesn't fire hashchange, but guard to avoid loops
   const suppressHashChange = useRef(false)
   useEffect(() => {
     suppressHashChange.current = true
     setStateToUrl(state)
-    // replaceState doesn't fire hashchange, but guard just in case
     requestAnimationFrame(() => { suppressHashChange.current = false })
   }, [state])
 
-  // Listen for hash changes (e.g. pasting a debug URL while page is open)
+  // Reload from URL when hash changes externally (e.g. pasting a debug URL)
   useEffect(() => {
     const onHashChange = () => {
       if (suppressHashChange.current) return
-      const urlState = getStateFromUrl()
-      if (urlState) {
-        dispatch({
-          type: 'LOAD_STATE',
-          state: {
-            board: urlState.board ?? createEmptyBoard(),
-            pieces: urlState.pieces ?? generatePieceSet(),
-            score: urlState.score ?? 0,
-            highScore: loadHighScore(),
-            comboMultiplier: urlState.comboMultiplier ?? 1,
-            gameOver: false,
-            lastClear: null,
-          },
-        })
-      }
+      const loaded = stateFromUrl()
+      if (loaded) dispatch({ type: 'LOAD_STATE', state: loaded })
     }
     window.addEventListener('hashchange', onHashChange)
     return () => window.removeEventListener('hashchange', onHashChange)

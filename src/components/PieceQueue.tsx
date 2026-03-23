@@ -8,18 +8,7 @@ type PieceQueueProps = {
 
 export default function PieceQueue({ pieces, onDragStart }: PieceQueueProps) {
   return (
-    <div
-      className="piece-queue"
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: '12px',
-        padding: '12px 0',
-        width: '100%',
-        maxWidth: '400px',
-      }}
-    >
+    <div className="piece-queue">
       {pieces.map((piece, i) => (
         <DraggablePiece
           key={piece?.id ?? `empty-${i}`}

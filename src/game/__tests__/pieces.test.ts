@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest'
 import { SHAPE_DEFINITIONS, generatePiece, generatePieceSet } from '../pieces'
-import type { ShapeType } from '../types'
 import { BLOCK_COLORS } from '../types'
 
 describe('SHAPE_DEFINITIONS', () => {

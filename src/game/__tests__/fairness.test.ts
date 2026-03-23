@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { createEmptyBoard, isValidPlacement, stampPiece, findClears, applyClear, canAllPiecesFit } from '../engine'
-import { generateFairPieceSet, generatePieceSet, SHAPE_DEFINITIONS } from '../pieces'
+import { generateFairPieceSet, SHAPE_DEFINITIONS } from '../pieces'
 import { serializeState } from '../serialize'
 import { BOARD_SIZE, BLOCK_COLORS } from '../types'
 import type { Board, Piece, GameState } from '../types'

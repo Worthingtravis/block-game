@@ -6,7 +6,7 @@ describe('constants', () => {
     expect(BOARD_SIZE).toBe(8)
   })
 
-  it('has 7 block colors', () => {
-    expect(BLOCK_COLORS).toHaveLength(7)
+  it('has 11 block colors', () => {
+    expect(BLOCK_COLORS).toHaveLength(11)
   })
 })

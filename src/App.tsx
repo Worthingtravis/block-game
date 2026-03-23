@@ -1,34 +1,43 @@
 import { useRef, useEffect, useMemo, useCallback, useState } from 'react'
 import Board from './components/Board'
-import Cell from './components/Cell'
 import PieceQueue from './components/PieceQueue'
+import PiecePreview from './components/PiecePreview'
 import ScoreDisplay from './components/ScoreDisplay'
 import GameOver from './components/GameOver'
 import ParticleCanvas from './components/ParticleCanvas'
+import OptionsModal from './components/OptionsModal'
 import type { ParticleCanvasHandle } from './components/ParticleCanvas'
-import { BOARD_SIZE } from './game/types'
-import type { Cell as CellType } from './game/types'
+import type { Piece } from './game/types'
 import { useGameState } from './hooks/useGameState'
 import { useDragDrop } from './hooks/useDragDrop'
 import { useAudio } from './hooks/useAudio'
+import { useBoardEffects } from './hooks/useBoardEffects'
+import { useSettings } from './hooks/useSettings'
 import { playPickUp, playPlace, playInvalidDrop } from './audio/sounds'
-import type { Piece } from './game/types'
+import { vibratePlace } from './audio/haptics'
 
 export default function App() {
   const { state, placePiece, newGame } = useGameState()
+  const { settings, update: updateSettings } = useSettings()
   const boardRef = useRef<HTMLDivElement>(null)
   const particleRef = useRef<ParticleCanvasHandle>(null)
   const [boardSize, setBoardSize] = useState({ width: 400, height: 400 })
-  const [shaking, setShaking] = useState(false)
-  const [clearingCells, setClearingCells] = useState<CellType[]>([])
+  const [optionsOpen, setOptionsOpen] = useState(false)
 
   useAudio(state)
+
+  const { shaking, clearingCells } = useBoardEffects({
+    lastClear: state.lastClear,
+    boardRef,
+    particleRef,
+  })
 
   const { dragState, dragPosition, draggedPiece, handleDragStart: rawDragStart, handlePointerMove, handlePointerUp: rawPointerUp } =
     useDragDrop({
       board: state.board,
       onDrop: (pieceIndex, position) => {
         playPlace()
+        vibratePlace()
         placePiece(pieceIndex, position)
       },
       boardRef,
@@ -59,7 +68,6 @@ export default function App() {
     }
   }, [handlePointerMove, handlePointerUp])
 
-  // Track board dimensions for particle canvas
   useEffect(() => {
     const el = boardRef.current
     if (!el) return
@@ -72,43 +80,6 @@ export default function App() {
     return () => observer.disconnect()
   }, [])
 
-  // Emit particles on line clear
-  useEffect(() => {
-    const clear = state.lastClear
-    if (!clear || clear.linesCleared === 0) return
-    const el = boardRef.current
-    if (!el || !particleRef.current) return
-
-    const rect = el.getBoundingClientRect()
-    const padding = parseFloat(getComputedStyle(el).padding) || 6
-    const cellW = (rect.width - padding * 2) / BOARD_SIZE
-    const cellH = (rect.height - padding * 2) / BOARD_SIZE
-
-    for (const cell of clear.clearedCells) {
-      const x = padding + cell.col * cellW + cellW / 2
-      const y = padding + cell.row * cellH + cellH / 2
-      particleRef.current.emit(x, y, '#ffffff', clear.linesCleared >= 2 ? 6 : 3)
-    }
-  }, [state.lastClear])
-
-  // Track clearing cells with timed cleanup so animation doesn't permanently hide them
-  useEffect(() => {
-    if (state.lastClear && state.lastClear.linesCleared > 0) {
-      setClearingCells(state.lastClear.clearedCells)
-      const timer = setTimeout(() => setClearingCells([]), 300)
-      return () => clearTimeout(timer)
-    }
-  }, [state.lastClear])
-
-  // Screen shake on multi-line clears
-  useEffect(() => {
-    if (state.lastClear && state.lastClear.linesCleared >= 2) {
-      setShaking(true)
-      const timer = setTimeout(() => setShaking(false), 200)
-      return () => clearTimeout(timer)
-    }
-  }, [state.lastClear])
-
   const previewCells = useMemo(() => {
     if (!dragState.hoverPosition || !draggedPiece) return undefined
     return draggedPiece.cells.map(c => ({
@@ -117,18 +88,34 @@ export default function App() {
     }))
   }, [dragState.hoverPosition, draggedPiece])
 
+  const handleRestart = useCallback(() => {
+    setOptionsOpen(false)
+    newGame()
+  }, [newGame])
+
   return (
     <div className="game-container">
-      <ScoreDisplay
-        score={state.score}
-        highScore={state.highScore}
-        comboMultiplier={state.comboMultiplier}
-      />
+      <div className="top-bar">
+        <ScoreDisplay
+          score={state.score}
+          highScore={state.highScore}
+          comboMultiplier={state.comboMultiplier}
+        />
+        <button
+          className="options-btn"
+          onClick={() => setOptionsOpen(true)}
+          aria-label="Options"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+        </button>
+      </div>
 
       <div
         ref={boardRef}
-        className={shaking ? 'board--shaking' : ''}
-        style={{ width: '100%', maxWidth: '400px', position: 'relative' }}
+        className={`board-wrapper${shaking ? ' board--shaking' : ''}`}
       >
         <Board
           board={state.board}
@@ -147,15 +134,8 @@ export default function App() {
 
       {dragPosition && draggedPiece && (
         <div
-          style={{
-            position: 'fixed',
-            left: dragPosition.x,
-            top: dragPosition.y,
-            transform: 'translate(-50%, -50%) scale(1.1)',
-            pointerEvents: 'none',
-            zIndex: 50,
-            opacity: 0.8,
-          }}
+          className="drag-ghost"
+          style={{ left: dragPosition.x, top: dragPosition.y }}
         >
           <PiecePreview piece={draggedPiece} />
         </div>
@@ -168,34 +148,15 @@ export default function App() {
           onNewGame={newGame}
         />
       )}
-    </div>
-  )
-}
 
-function PiecePreview({ piece }: { piece: Piece }) {
-  const maxRow = Math.max(...piece.cells.map(c => c.row)) + 1
-  const maxCol = Math.max(...piece.cells.map(c => c.col)) + 1
-  const cellSet = new Set(piece.cells.map(c => `${c.row},${c.col}`))
-  const size = 32
-
-  return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(${maxCol}, ${size}px)`,
-        gap: '3px',
-      }}
-    >
-      {Array.from({ length: maxRow * maxCol }, (_, i) => {
-        const r = Math.floor(i / maxCol)
-        const c = i % maxCol
-        const filled = cellSet.has(`${r},${c}`)
-        return filled ? (
-          <Cell key={`${r}-${c}`} color={piece.color} size={size} />
-        ) : (
-          <div key={`${r}-${c}`} style={{ width: size, height: size }} />
-        )
-      })}
+      {optionsOpen && (
+        <OptionsModal
+          settings={settings}
+          onUpdate={updateSettings}
+          onClose={() => setOptionsOpen(false)}
+          onRestart={handleRestart}
+        />
+      )}
     </div>
   )
 }

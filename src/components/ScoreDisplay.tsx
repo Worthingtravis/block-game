@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
 type ScoreDisplayProps = {
   score: number
@@ -7,64 +7,49 @@ type ScoreDisplayProps = {
 }
 
 export default function ScoreDisplay({ score, highScore, comboMultiplier }: ScoreDisplayProps) {
-  const prevScoreRef = useRef(score)
-  const prevComboRef = useRef(comboMultiplier)
+  const [prevScore, setPrevScore] = useState(score)
+  const [prevCombo, setPrevCombo] = useState(comboMultiplier)
   const [scorePopping, setScorePopping] = useState(false)
   const [comboPulsing, setComboPulsing] = useState(false)
 
-  useEffect(() => {
-    if (score !== prevScoreRef.current) {
-      setScorePopping(true)
-      const timer = setTimeout(() => setScorePopping(false), 300)
-      prevScoreRef.current = score
-      return () => clearTimeout(timer)
-    }
-  }, [score])
+  if (score !== prevScore) {
+    setPrevScore(score)
+    setScorePopping(true)
+  }
+  if (comboMultiplier !== prevCombo) {
+    if (comboMultiplier > prevCombo) setComboPulsing(true)
+    setPrevCombo(comboMultiplier)
+  }
 
   useEffect(() => {
-    if (comboMultiplier > prevComboRef.current) {
-      setComboPulsing(true)
-      const timer = setTimeout(() => setComboPulsing(false), 300)
-      prevComboRef.current = comboMultiplier
-      return () => clearTimeout(timer)
-    }
-    prevComboRef.current = comboMultiplier
-  }, [comboMultiplier])
+    if (!scorePopping) return
+    const timer = setTimeout(() => setScorePopping(false), 300)
+    return () => clearTimeout(timer)
+  }, [scorePopping])
+
+  useEffect(() => {
+    if (!comboPulsing) return
+    const timer = setTimeout(() => setComboPulsing(false), 300)
+    return () => clearTimeout(timer)
+  }, [comboPulsing])
 
   return (
-    <div
-      className="score-display"
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '100%',
-        maxWidth: '400px',
-        padding: '8px 0',
-      }}
-    >
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '12px', opacity: 0.7 }}>HIGH</div>
-        <div style={{ fontSize: '20px', fontWeight: 'bold' }}>{highScore}</div>
+    <div className="score-display">
+      <div>
+        <div className="score-display__label">HIGH</div>
+        <div className="score-display__value">{highScore}</div>
       </div>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '14px', opacity: 0.7 }}>SCORE</div>
-        <div
-          className={scorePopping ? 'score--popping' : ''}
-          style={{ fontSize: '32px', fontWeight: 'bold' }}
-        >
+      <div>
+        <div className="score-display__label score-display__label--main">SCORE</div>
+        <div className={`score-display__value score-display__value--main${scorePopping ? ' score--popping' : ''}`}>
           {score}
         </div>
       </div>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '12px', opacity: 0.7 }}>COMBO</div>
+      <div>
+        <div className="score-display__label">COMBO</div>
         <div
-          className={comboPulsing ? 'combo--pulsing' : ''}
-          style={{
-            fontSize: '20px',
-            fontWeight: 'bold',
-            color: comboMultiplier > 1 ? 'var(--yellow)' : 'inherit',
-          }}
+          className={`score-display__value${comboPulsing ? ' combo--pulsing' : ''}`}
+          style={{ color: comboMultiplier > 1 ? 'var(--yellow)' : 'inherit' }}
         >
           x{comboMultiplier}
         </div>

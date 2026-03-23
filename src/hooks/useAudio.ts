@@ -1,35 +1,27 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import type { GameState } from '../game/types'
 import { initAudio, playLineClear, playCombo, playGameOver } from '../audio/sounds'
+import { vibrateClear, vibrateGameOver } from '../audio/haptics'
 
 export function useAudio(state: GameState) {
-  const prevComboRef = useRef(state.comboMultiplier)
-  const prevGameOverRef = useRef(state.gameOver)
-  const initializedRef = useRef(false)
+  const [prevGameOver, setPrevGameOver] = useState(state.gameOver)
+
+  if (state.gameOver !== prevGameOver) {
+    if (state.gameOver && !prevGameOver) {
+      playGameOver()
+      vibrateGameOver()
+    }
+    setPrevGameOver(state.gameOver)
+  }
 
   useEffect(() => {
-    if (!initializedRef.current) {
-      initializedRef.current = true
-      prevComboRef.current = state.comboMultiplier
-      prevGameOverRef.current = state.gameOver
-      return
+    if (!state.lastClear || state.lastClear.linesCleared === 0) return
+    playLineClear(state.lastClear.linesCleared)
+    vibrateClear()
+    if (state.lastClear.linesCleared >= 2) {
+      playCombo(state.lastClear.linesCleared)
     }
-
-    if (state.gameOver && !prevGameOverRef.current) {
-      playGameOver()
-    }
-
-    if (state.comboMultiplier > prevComboRef.current) {
-      const linesGuess = state.comboMultiplier - prevComboRef.current
-      playLineClear(linesGuess)
-      if (state.comboMultiplier > 2) {
-        playCombo(state.comboMultiplier)
-      }
-    }
-
-    prevComboRef.current = state.comboMultiplier
-    prevGameOverRef.current = state.gameOver
-  }, [state.comboMultiplier, state.gameOver])
+  }, [state.lastClear])
 
   useEffect(() => {
     const handler = () => {

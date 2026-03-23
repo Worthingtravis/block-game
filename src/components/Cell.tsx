@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { BlockColor } from '../game/types'
 
 type CellProps = {
@@ -15,58 +16,31 @@ const COLOR_MAP: Record<BlockColor, { main: string; light: string; dark: string 
   gray:   { main: 'var(--gray)',   light: 'var(--gray-light)',   dark: 'var(--gray-dark)' },
   blue:   { main: 'var(--blue)',   light: 'var(--blue-light)',   dark: 'var(--blue-dark)' },
   pink:   { main: 'var(--pink)',   light: 'var(--pink-light)',   dark: 'var(--pink-dark)' },
+  red:    { main: 'var(--red)',    light: 'var(--red-light)',    dark: 'var(--red-dark)' },
+  teal:   { main: 'var(--teal)',   light: 'var(--teal-light)',   dark: 'var(--teal-dark)' },
+  lime:   { main: 'var(--lime)',   light: 'var(--lime-light)',   dark: 'var(--lime-dark)' },
+  indigo: { main: 'var(--indigo)', light: 'var(--indigo-light)', dark: 'var(--indigo-dark)' },
 }
 
-export default function Cell({ color, preview, invalid, size }: CellProps) {
-  const w = size ?? '100%'
-  const h = size ?? undefined
-  const aspect = size ? undefined : ('1' as const)
+export default memo(function Cell({ color, preview, invalid, size }: CellProps) {
+  const base: React.CSSProperties = {
+    width: size ?? '100%',
+    height: size ?? undefined,
+    aspectRatio: size ? undefined : '1',
+    borderRadius: 'var(--cell-radius)',
+  }
 
   if (preview && !invalid) {
     const colors = COLOR_MAP[preview]
-    return (
-      <div
-        className="cell cell--preview"
-        style={{
-          width: w,
-          height: h,
-          aspectRatio: aspect,
-          backgroundColor: colors.main,
-          opacity: 0.4,
-          borderRadius: 'var(--cell-radius)',
-        }}
-      />
-    )
+    return <div className="cell cell--preview" style={{ ...base, backgroundColor: colors.main, opacity: 0.4 }} />
   }
 
   if (preview && invalid) {
-    return (
-      <div
-        className="cell cell--invalid"
-        style={{
-          width: w,
-          height: h,
-          aspectRatio: aspect,
-          backgroundColor: '#ff000030',
-          borderRadius: 'var(--cell-radius)',
-        }}
-      />
-    )
+    return <div className="cell cell--invalid" style={{ ...base, backgroundColor: '#ff000030' }} />
   }
 
   if (!color) {
-    return (
-      <div
-        className="cell cell--empty"
-        style={{
-          width: w,
-          height: h,
-          aspectRatio: aspect,
-          backgroundColor: 'var(--bg-cell-empty)',
-          borderRadius: 'var(--cell-radius)',
-        }}
-      />
-    )
+    return <div className="cell cell--empty" style={{ ...base, backgroundColor: 'var(--bg-cell-empty)' }} />
   }
 
   const colors = COLOR_MAP[color]
@@ -74,13 +48,10 @@ export default function Cell({ color, preview, invalid, size }: CellProps) {
     <div
       className="cell cell--filled"
       style={{
-        width: w,
-        height: h,
-        aspectRatio: aspect,
-        borderRadius: 'var(--cell-radius)',
+        ...base,
         background: `linear-gradient(135deg, ${colors.light} 0%, ${colors.main} 40%, ${colors.dark} 100%)`,
         boxShadow: `inset 2px 2px 4px ${colors.light}40, inset -2px -2px 4px ${colors.dark}80, 0 2px 4px rgba(0,0,0,0.3)`,
       }}
     />
   )
-}
+})

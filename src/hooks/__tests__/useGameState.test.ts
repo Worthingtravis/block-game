@@ -48,7 +48,7 @@ describe('gameReducer PLACE_PIECE', () => {
     expect(nonNull.length).toBe(3)
   })
 
-  it('resets combo when no lines are cleared', () => {
+  it('decrements combo by 1 when no lines are cleared', () => {
     let state = createInitialState()
     state = { ...state, comboMultiplier: 5 }
     const next = gameReducer(state, {
@@ -56,7 +56,7 @@ describe('gameReducer PLACE_PIECE', () => {
       pieceIndex: 0,
       position: { row: 0, col: 0 },
     })
-    expect(next.comboMultiplier).toBe(1)
+    expect(next.comboMultiplier).toBe(4)
   })
 })
 

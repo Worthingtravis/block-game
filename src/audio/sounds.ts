@@ -1,4 +1,6 @@
 let audioCtx: AudioContext | null = null
+let masterVolume = 0.7
+let soundEnabled = true
 
 function getCtx(): AudioContext {
   if (!audioCtx) audioCtx = new AudioContext()
@@ -9,13 +11,24 @@ export function initAudio(): void {
   getCtx()
 }
 
+export function setSoundEnabled(enabled: boolean): void {
+  soundEnabled = enabled
+}
+
+export function setMasterVolume(volume: number): void {
+  masterVolume = Math.max(0, Math.min(1, volume))
+}
+
 function playTone(frequency: number, duration: number, type: OscillatorType = 'sine', volume = 0.3) {
+  if (!soundEnabled) return
   const ctx = getCtx()
+  const scaledVolume = volume * masterVolume
+  if (scaledVolume < 0.001) return
   const osc = ctx.createOscillator()
   const gain = ctx.createGain()
   osc.type = type
   osc.frequency.setValueAtTime(frequency, ctx.currentTime)
-  gain.gain.setValueAtTime(volume, ctx.currentTime)
+  gain.gain.setValueAtTime(scaledVolume, ctx.currentTime)
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration)
   osc.connect(gain)
   gain.connect(ctx.destination)

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { createEmptyBoard, isValidPlacement, stampPiece, findClears, applyClear, canAnyPieceFit } from '../engine'
 import { BOARD_SIZE } from '../types'
-import type { Piece, Board } from '../types'
+import type { Piece } from '../types'
 
 const testPiece: Piece = {
   id: 'test-1',
