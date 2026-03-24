@@ -99,7 +99,7 @@ function settle(state: GameState): GameState {
     }
   }
 
-  const gameOver = checkGameOver(state.board, state.queue)
+  const gameOver = checkGameOver(state.board, state.queue[0])
   if (gameOver) clearGame()
 
   return { ...state, phase: 'idle', currentMerge: null, dropCell: null, gameOver }

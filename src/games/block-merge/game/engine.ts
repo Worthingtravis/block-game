@@ -116,8 +116,9 @@ export function dropBlock(board: Board, col: number, value: number): { board: Bo
   return { board, row: -1, instantMerge: false }
 }
 
-/** True when no moves are possible — board full, no adjacent matches, and no queue block can merge onto a top cell. */
-export function checkGameOver(board: Board, queue?: [number, number, number]): boolean {
+/** True when the current block has no valid placement — board full, no empty cells,
+ *  no adjacent matches, and the current queue block can't merge onto any column top. */
+export function checkGameOver(board: Board, currentBlock?: number): boolean {
   for (let r = 0; r < BOARD_SIZE; r++) {
     for (let c = 0; c < BOARD_SIZE; c++) {
       if (board[r][c] === null) return false
@@ -126,12 +127,10 @@ export function checkGameOver(board: Board, queue?: [number, number, number]): b
       if (r + 1 < BOARD_SIZE && board[r + 1][c] === val) return false
     }
   }
-  // Board is full with no adjacent matches — check if any queue block can merge onto a column top
-  if (queue) {
-    for (const value of queue) {
-      for (let c = 0; c < BOARD_SIZE; c++) {
-        if (board[0][c] === value) return false
-      }
+  // Board is full with no adjacent matches — check if the CURRENT block can merge onto a column top
+  if (currentBlock != null) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      if (board[0][c] === currentBlock) return false
     }
   }
   return true
