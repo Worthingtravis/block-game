@@ -36,7 +36,8 @@ function tryMerge(state: GameState, board: Board, prefer?: { row: number; col: n
   const highestTile = merge.resultValue > state.highestTile
     ? merge.resultValue as MergeValue
     : state.highestTile
-  const score = state.score + merge.resultValue
+  // Score = sum of all consumed blocks (group size × source value)
+  const score = state.score + found.group.length * merge.sourceValue
   const highScore = score > state.highScore
     ? (saveHighScore(score), score)
     : state.highScore
