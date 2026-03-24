@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 import MergeBoard from './components/MergeBoard'
+import Affirmations from './components/Affirmations'
 import NextQueue from './components/NextQueue'
 import ParticleCanvas from '../block-shapes/components/ParticleCanvas'
 import type { ParticleCanvasHandle } from '../block-shapes/components/ParticleCanvas'
@@ -94,6 +95,7 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
           dropCell={state.dropCell}
           disabled={state.gameOver}
         />
+        <Affirmations currentMerge={state.currentMerge} chainStep={state.chainStep} phase={state.phase} />
         <ParticleCanvas ref={particleRef} width={boardSize.width} height={boardSize.height} />
       </div>
 
