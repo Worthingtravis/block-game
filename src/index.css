@@ -1444,17 +1444,16 @@ html, body, #root {
  */
 
 .hex-board {
-  --hex-w: 56px;
+  --hex-w: 62px;
   --hex-h: calc(var(--hex-w) * 1.1547);
-  --hex-row-h: calc(var(--hex-h) * 0.75);
+  --hex-row-h: calc(var(--hex-h) * 0.76);
 
   position: relative;
-  width: calc(6 * var(--hex-w));
+  width: calc(6.2 * var(--hex-w));
   height: calc(4 * var(--hex-row-h) + var(--hex-h) + 24px);
   margin: 0 auto;
   padding: 0;
-  /* Isometric tilt — board angles away from camera */
-  transform: perspective(600px) rotateX(8deg);
+  transform: perspective(600px) rotateX(6deg);
   transform-origin: center bottom;
 }
 
@@ -1474,6 +1473,9 @@ html, body, #root {
 }
 
 .hex-cell--empty {
+  width: 92%;
+  height: 92%;
+  margin: 4% 0 0 4%;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   background: var(--bg-cell-empty);
 }
@@ -1518,7 +1520,7 @@ html, body, #root {
 /* Responsive hex size for small screens */
 @media (max-width: 420px) {
   .hex-board {
-    --hex-w: 48px;
+    --hex-w: 52px;
   }
 }
 
