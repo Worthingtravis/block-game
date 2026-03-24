@@ -9,30 +9,14 @@ const ROWS = [
   [16, 17, 18],
 ]
 
-const MAX_COLS = 5 // widest row
+// Horizontal offset for each row (in half-hex-widths from the left)
+// Widest row (5) = 0 offset, 4-cell rows offset by 0.5, 3-cell rows by 1
+const ROW_OFFSETS = [1, 0.5, 0, 0.5, 1]
 
 type HexBoardProps = {
   board: Board
   lastMatch: MatchResult | null
   onCellClick: (index: number) => void
-}
-
-/**
- * Calculate pixel position for each hex cell in a flat-top honeycomb layout.
- *
- * For a flat-top hex with width W:
- *   H = W * (2 / sqrt(3)) ≈ W * 1.1547
- *   Row vertical spacing = H * 0.75 (rows interlock)
- *   Odd rows (1, 3) are offset left by W/2 relative to the widest row center.
- */
-function hexPosition(row: number, col: number, rowLen: number) {
-  // How many cells this row is missing vs the widest row
-  const offset = (MAX_COLS - rowLen) / 2
-  // x: shifted by offset, each cell is 1 hex-width apart
-  // Use CSS custom property var(--hex-w) at runtime; here we return multipliers
-  const x = (col + offset) // in units of hex-width
-  const y = row            // in units of row-spacing (0.75 * hex-height)
-  return { x, y }
 }
 
 export default function HexBoard({ board, lastMatch, onCellClick }: HexBoardProps) {
@@ -42,7 +26,9 @@ export default function HexBoard({ board, lastMatch, onCellClick }: HexBoardProp
     <div className="hex-board">
       {ROWS.map((row, rowIndex) =>
         row.map((cellIndex, colIndex) => {
-          const { x, y } = hexPosition(rowIndex, colIndex, row.length)
+          const xOffset = ROW_OFFSETS[rowIndex]
+          const x = colIndex + xOffset
+          const y = rowIndex
           return (
             <div
               key={cellIndex}

@@ -1444,13 +1444,13 @@ html, body, #root {
  */
 
 .hex-board {
-  --hex-w: 60px;
+  --hex-w: 58px;
   --hex-h: calc(var(--hex-w) * 1.1547);
   --hex-row-h: calc(var(--hex-h) * 0.75);
 
   position: relative;
-  width: calc(5 * var(--hex-w));
-  height: calc(4 * var(--hex-row-h) + var(--hex-h) + 16px);
+  width: calc(6 * var(--hex-w));
+  height: calc(4 * var(--hex-row-h) + var(--hex-h) + 20px);
   margin: 0 auto;
   padding: 0;
 }
@@ -1514,9 +1514,9 @@ html, body, #root {
 }
 
 /* Responsive hex size for small screens */
-@media (max-width: 400px) {
+@media (max-width: 420px) {
   .hex-board {
-    --hex-w: 56px;
+    --hex-w: 48px;
   }
 }
 

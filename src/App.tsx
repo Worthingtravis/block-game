@@ -23,16 +23,16 @@ const HEX_PREVIEW_ROWS = [
   { cells: ['#f44336', '#ffdd44', '#4caf50'], count: 3 },
 ]
 
+const PREVIEW_OFFSETS = [1, 0.5, 0, 0.5, 1]
+
 function HexPreview() {
-  const maxCols = 5
   let key = 0
   return (
     <div className="hex-preview-grid">
       {HEX_PREVIEW_ROWS.map((row, rowIdx) =>
         row.cells.map((color, colIdx) => {
-          const offset = (maxCols - row.count) / 2
-          const x = (colIdx + offset) // in units of --pw
-          const y = rowIdx            // in units of --pr
+          const x = colIdx + PREVIEW_OFFSETS[rowIdx]
+          const y = rowIdx
           return (
             <div
               key={key++}
