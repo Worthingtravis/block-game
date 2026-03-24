@@ -157,7 +157,7 @@ export function useGameState() {
     return () => {
       if (stepTimerRef.current) clearTimeout(stepTimerRef.current)
     }
-  }, [state.phase, state.board])
+  }, [state.phase, state.currentMerge])
 
   // Auto-save when settling to idle
   useEffect(() => {
