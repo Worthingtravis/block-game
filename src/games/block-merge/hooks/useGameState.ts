@@ -1,6 +1,7 @@
 import { useReducer, useCallback, useEffect, useState } from 'react'
 import type { GameState, GameAction, Cell, MergeValue } from '../game/types'
 import { createEmptyBoard, resolveChains, checkGameOver, generateNextValue } from '../game/engine'
+import { BOARD_SIZE } from '../game/types'
 import { calculateMergeScore } from '../game/scoring'
 import { saveGame, loadGame, clearGame, loadHighScore, saveHighScore } from '../persistence'
 
@@ -31,14 +32,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'PLACE_BLOCK': {
       const { position } = action
-      if (state.board[position.row][position.col] !== null) return state
       if (state.gameOver) return state
+
+      // Drop block to the lowest empty cell in this column
+      const col = position.col
+      let dropRow = -1
+      for (let r = BOARD_SIZE - 1; r >= 0; r--) {
+        if (state.board[r][col] === null) { dropRow = r; break }
+      }
+      if (dropRow < 0) return state // column is full
 
       const currentValue = state.queue[0]
       const newBoard = state.board.map(r => [...r])
-      newBoard[position.row][position.col] = currentValue
+      newBoard[dropRow][col] = currentValue
+      const dropPosition = { row: dropRow, col }
 
-      const { board: resolvedBoard, merges } = resolveChains(newBoard, position)
+      const { board: resolvedBoard, merges } = resolveChains(newBoard, dropPosition)
 
       const mergeScore = calculateMergeScore(merges)
       const score = state.score + mergeScore + 1

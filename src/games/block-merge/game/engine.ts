@@ -58,9 +58,10 @@ export function findMergeGroup(board: Board, origin: Cell): Cell[] {
  */
 export function resolveChains(
   board: Board,
-  origin: Cell
+  initialOrigin: Cell
 ): { board: Board; merges: MergeResult[] } {
   let currentBoard = board.map(row => [...row])
+  let origin = { ...initialOrigin }
   const merges: MergeResult[] = []
   let chainDepth = 0
 
@@ -72,7 +73,10 @@ export function resolveChains(
     const valueIndex = MERGE_VALUES.indexOf(currentValue)
     if (valueIndex === -1 || valueIndex >= MERGE_VALUES.length - 1) break
 
-    const nextValue = MERGE_VALUES[valueIndex + 1]
+    // Group size determines levels gained: 2 cells = +1, 3 cells = +2, etc.
+    const levelsUp = Math.min(group.length - 1, MERGE_VALUES.length - 1 - valueIndex)
+    if (levelsUp < 1) break
+    const nextValue = MERGE_VALUES[valueIndex + levelsUp]
 
     // Record which cells were merged (all except the result cell)
     const mergedCells = group.filter(
@@ -87,11 +91,25 @@ export function resolveChains(
     })
 
     // Apply the merge: clear all group cells, place new value at origin
-    const nextBoard = currentBoard.map(row => [...row])
+    let nextBoard = currentBoard.map(row => [...row])
     for (const cell of group) {
       nextBoard[cell.row][cell.col] = null
     }
     nextBoard[origin.row][origin.col] = nextValue
+
+    // Apply gravity — blocks fall down
+    nextBoard = applyGravity(nextBoard)
+
+    // Find where the merged result ended up after gravity
+    // It may have fallen from origin.row to a lower row
+    let newOriginRow = origin.row
+    for (let r = BOARD_SIZE - 1; r >= 0; r--) {
+      if (nextBoard[r][origin.col] === nextValue) {
+        newOriginRow = r
+        break
+      }
+    }
+    origin = { row: newOriginRow, col: origin.col }
 
     currentBoard = nextBoard
     chainDepth++
@@ -101,6 +119,27 @@ export function resolveChains(
   }
 
   return { board: currentBoard, merges }
+}
+
+/**
+ * Apply gravity — blocks fall down to fill empty cells below them.
+ */
+export function applyGravity(board: Board): Board {
+  const newBoard = board.map(row => [...row])
+  for (let col = 0; col < BOARD_SIZE; col++) {
+    let writeRow = BOARD_SIZE - 1
+    for (let row = BOARD_SIZE - 1; row >= 0; row--) {
+      if (newBoard[row][col] !== null) {
+        const val = newBoard[row][col]
+        if (row !== writeRow) {
+          newBoard[writeRow][col] = val
+          newBoard[row][col] = null
+        }
+        writeRow--
+      }
+    }
+  }
+  return newBoard
 }
 
 /**
