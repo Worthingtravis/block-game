@@ -768,6 +768,8 @@ html, body, #root {
   font-weight: 800;
   font-size: 1.4rem;
   color: #fff;
+  max-width: 80%;
+  text-align: center;
   text-shadow:
     0 0 8px rgba(255, 200, 50, 0.8),
     0 0 20px rgba(255, 150, 0, 0.5),

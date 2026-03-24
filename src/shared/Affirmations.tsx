@@ -33,8 +33,8 @@ export default function Affirmations({ trigger, getText }: AffirmationsProps) {
           id: nextId++,
           text: result.text,
           sizeClass: result.sizeClass,
-          x: 30 + Math.random() * 40,
-          y: 20 + Math.random() * 30,
+          x: 35 + Math.random() * 30,
+          y: 25 + Math.random() * 25,
           expiresAt: Date.now() + DURATION,
         }]
         return next.length > MAX_ITEMS ? next.slice(-MAX_ITEMS) : next
