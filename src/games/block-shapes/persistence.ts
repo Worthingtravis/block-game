@@ -49,6 +49,45 @@ export function createStoredGame(pieces: (Piece | null)[], score = 0): StoredGam
   }
 }
 
+export type ReplayStep = {
+  state: GameState
+  moveIndex: number
+  pieceIndex: number
+  position: Cell
+}
+
+export function replayGameSteps(game: StoredGame): ReplayStep[] {
+  const initialPieces = game.initial_pieces.map(pieceFromStored) as [Piece | null, Piece | null, Piece | null]
+
+  let state: GameState = {
+    board: createEmptyBoard(),
+    pieces: initialPieces,
+    score: 0,
+    highScore: 0,
+    comboMultiplier: 1,
+    bombs: 0,
+    gameOver: false,
+    lastClear: null,
+  }
+
+  const sorted = [...game.moves].sort((a, b) => a.move_number - b.move_number)
+  const steps: ReplayStep[] = []
+
+  for (const move of sorted) {
+    const position: Cell = { row: move.position_row, col: move.position_col }
+    state = gameReducer(state, { type: 'PLACE_PIECE', pieceIndex: move.piece_index, position })
+
+    if (move.next_pieces) {
+      const pieces = move.next_pieces.map(pieceFromStored) as [Piece | null, Piece | null, Piece | null]
+      state = { ...state, pieces }
+    }
+
+    steps.push({ state, moveIndex: move.move_number, pieceIndex: move.piece_index, position })
+  }
+
+  return steps
+}
+
 export function replayGame(game: StoredGame, highScore: number): GameState {
   const initialPieces = game.initial_pieces.map(pieceFromStored) as [Piece | null, Piece | null, Piece | null]
 

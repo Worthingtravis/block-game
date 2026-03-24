@@ -7,12 +7,14 @@ import GameOver from './components/GameOver'
 import ParticleCanvas from './components/ParticleCanvas'
 import Affirmations from './components/Affirmations'
 import OptionsModal from './components/OptionsModal'
+import GameReplay from './components/GameReplay'
 import type { ParticleCanvasHandle } from './components/ParticleCanvas'
 import type { Piece, Cell } from './game/types'
 import { BOARD_SIZE } from './game/types'
 import { useGameState } from './hooks/useGameState'
 import { useDragDrop } from './hooks/useDragDrop'
 import { useAudio } from './hooks/useAudio'
+import { loadGameLocally } from './persistence'
 import { useBoardEffects } from './hooks/useBoardEffects'
 import { useSettings } from './hooks/useSettings'
 import { playPickUp, playPlace, playInvalidDrop, playBombExplode } from './audio/sounds'
@@ -33,6 +35,8 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
   const [boardSize, setBoardSize] = useState({ width: 400, height: 400 })
   const [optionsOpen, setOptionsOpen] = useState(false)
   const [bombMode, setBombMode] = useState(false)
+  const [reviewing, setReviewing] = useState(false)
+  const [replayGame, setReplayGame] = useState<import('./persistence').StoredGame | null>(null)
 
   useAudio(state)
 
@@ -195,11 +199,15 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
         </div>
       )}
 
-      {state.gameOver && (
+      {state.gameOver && !reviewing && (
         <GameOver
           score={state.score}
           highScore={state.highScore}
           onNewGame={newGame}
+          onReview={() => {
+            const saved = loadGameLocally()
+            if (saved) { setReplayGame(saved); setReviewing(true) }
+          }}
         />
       )}
 
@@ -210,6 +218,10 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
           onClose={() => setOptionsOpen(false)}
           onRestart={handleRestart}
         />
+      )}
+
+      {reviewing && replayGame && (
+        <GameReplay game={replayGame} onClose={() => { setReviewing(false); setReplayGame(null) }} />
       )}
     </div>
   )
