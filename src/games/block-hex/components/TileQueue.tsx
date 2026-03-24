@@ -1,3 +1,4 @@
+import { motion } from 'motion/react'
 import type { TileVM } from '../block-hex.vm'
 import { HEX_COLORS } from '../block-hex.vm'
 
@@ -11,9 +12,15 @@ export default function TileQueue({ tiles }: TileQueueProps) {
   return (
     <div className="tile-queue">
       {tiles.map((tile, i) => (
-        <div
+        <motion.div
           key={i}
           className={`tile-queue__tile${tile.isCurrent ? ' tile-queue__tile--current' : ''}`}
+          animate={{
+            scale: tile.isCurrent ? 1 : 0.75,
+            opacity: tile.isCurrent ? 1 : 0.4,
+          }}
+          whileHover={tile.isCurrent ? { scale: 1.08, y: -4 } : {}}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
         >
           <div className="tile-queue__hex-stack">
             {tile.layers.map((color, layerIndex, arr) => {
@@ -33,7 +40,7 @@ export default function TileQueue({ tiles }: TileQueueProps) {
               )
             })}
           </div>
-        </div>
+        </motion.div>
       ))}
     </div>
   )

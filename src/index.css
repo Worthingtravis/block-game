@@ -1581,18 +1581,6 @@ html, body, #root {
       rgba(255, 255, 255, 0.03) 50%,
       rgba(0, 0, 0, 0.1) 100%
     );
-  transition: background 200ms, transform 200ms;
-}
-
-.hex-cell--empty:hover {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.06) 0%,
-      rgba(255, 255, 255, 0.1) 50%,
-      rgba(255, 255, 255, 0.04) 100%
-    );
-  transform: scale(1.06);
 }
 
 /* Filled cell — 3D gemstone container. Remove clip-path so stacked layers can overflow.
@@ -1611,15 +1599,7 @@ html, body, #root {
   z-index: 100;
 }
 
-.hex-cell--filled:hover {
-  transform: translateZ(6px) scale(1.04);
-  filter: brightness(1.1);
-}
-
-/* Match animation — juicy pop with glow */
-.hex-cell--matching {
-  animation: hexMatchPop 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
-}
+/* Hover and match animations handled by motion/react */
 
 /* ---- 3D Hex Disc (gemstone layer) ---- */
 
@@ -1653,28 +1633,6 @@ html, body, #root {
 }
 
 /* --- Animations --- */
-
-@keyframes hexMatchPop {
-  0% {
-    transform: scale(1);
-    filter: brightness(1);
-  }
-  25% {
-    transform: scale(1.2);
-    filter: brightness(1.4);
-  }
-  50% {
-    transform: scale(0.9);
-    filter: brightness(1.1);
-  }
-  75% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-    filter: brightness(1);
-  }
-}
 
 @media (max-width: 420px) {
   .hex-board { --hex-w: 48px; }
