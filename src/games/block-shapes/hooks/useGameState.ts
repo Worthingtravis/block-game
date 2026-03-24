@@ -208,7 +208,7 @@ export function useGameState(opts?: UseGameStateOptions) {
     const sync = syncRef.current
 
     // New game started (reducer returned fresh state)
-    if (state.score === 0 && state.comboMultiplier === 1 && prev !== state && prev.score > 0) {
+    if (state.score === 0 && state.comboMultiplier === 1 && prev !== state && prev.board !== state.board) {
       gameRef.current = createStoredGame(state.pieces)
       lastFlushedRef.current = 0
       saveGameLocally(gameRef.current)
