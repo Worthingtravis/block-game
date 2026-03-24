@@ -75,7 +75,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const nextQueue: [MergeValue, MergeValue, MergeValue] = [
         state.queue[1],
         state.queue[2],
-        generateNextValue(state.score),
+        generateNextValue(state.score, board),
       ]
 
       return {

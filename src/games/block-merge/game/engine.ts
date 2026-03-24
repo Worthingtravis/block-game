@@ -124,12 +124,39 @@ export function checkGameOver(board: Board): boolean {
   return true
 }
 
-/** Progressive block value generation. */
-export function generateNextValue(score: number): MergeValue {
+/** Check if a value exists anywhere on the board. */
+function boardHasValue(board: Board, value: MergeValue): boolean {
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      if (board[r][c] === value) return true
+    }
+  }
+  return false
+}
+
+/**
+ * Progressive block value generation.
+ * Before phasing out a value, checks if it still exists on the board.
+ * If it does, keeps offering it so the player can merge it away.
+ */
+export function generateNextValue(score: number, board?: Board): MergeValue {
   const rand = Math.random()
-  if (score >= 2000) return rand < 0.15 ? 16 : rand < 0.55 ? 8 : 4
-  if (score >= 1000) return rand < 0.3 ? 8 : 4
-  if (score >= 500) return rand < 0.3 ? 2 : 4
+
+  // If the board still has 2s, keep offering them regardless of score
+  const has2s = board ? boardHasValue(board, 2) : true
+
+  if (score >= 2000) {
+    if (has2s && rand < 0.15) return 2
+    return rand < 0.15 ? 16 : rand < 0.55 ? 8 : 4
+  }
+  if (score >= 1000) {
+    if (has2s && rand < 0.2) return 2
+    return rand < 0.3 ? 8 : 4
+  }
+  if (score >= 500) {
+    if (has2s) return rand < 0.4 ? 2 : 4
+    return rand < 0.15 ? 2 : 4
+  }
   if (score >= 200) return rand < 0.5 ? 2 : 4
   return rand < 0.7 ? 2 : 4
 }
