@@ -1,7 +1,6 @@
 import { useReducer, useCallback, useEffect, useState, useRef } from 'react'
-import type { GameState, GameAction, MergeValue } from '../game/types'
+import type { GameState, GameAction, MergeValue, Board } from '../game/types'
 import { createEmptyBoard, dropBlock, findAnyMerge, applyMerge, applyGravity, checkGameOver, generateNextValue } from '../game/engine'
-import { BOARD_SIZE } from '../game/types'
 import { saveGame, loadGame, clearGame, loadHighScore, saveHighScore } from '../persistence'
 
 const STEP_INTERVAL = 350
@@ -28,19 +27,46 @@ function createInitialState(): GameState {
   return buildGameState()
 }
 
+/** Try to find and apply a merge. Returns the updated state in 'merging' phase, or null if no merge found. */
+function tryMerge(state: GameState, board: Board, prefer?: { row: number; col: number }): GameState | null {
+  const found = findAnyMerge(board, prefer)
+  if (!found) return null
+
+  const { board: mergedBoard, merge } = applyMerge(board, found.origin, found.group)
+  const highestTile = merge.resultValue > state.highestTile
+    ? merge.resultValue as MergeValue
+    : state.highestTile
+  const score = state.score + merge.resultValue
+  const highScore = score > state.highScore
+    ? (saveHighScore(score), score)
+    : state.highScore
+
+  return {
+    ...state,
+    board: mergedBoard,
+    score,
+    highScore,
+    highestTile,
+    totalMerges: state.totalMerges + 1,
+    phase: 'merging',
+    currentMerge: merge,
+    dropCell: null,
+  }
+}
+
+/** Settle the board: check game over and return idle state. */
+function settle(state: GameState): GameState {
+  const gameOver = checkGameOver(state.board)
+  if (gameOver) clearGame()
+  return { ...state, phase: 'idle', currentMerge: null, dropCell: null, gameOver }
+}
+
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'PLACE_BLOCK': {
       if (state.phase !== 'idle' || state.gameOver) return state
+
       const col = action.col
-
-      // Check column has space
-      let hasSpace = false
-      for (let r = 0; r < BOARD_SIZE; r++) {
-        if (state.board[r][col] === null) { hasSpace = true; break }
-      }
-      if (!hasSpace) return state
-
       const value = state.queue[0]
       const { board, row } = dropBlock(state.board, col, value)
       if (row < 0) return state
@@ -65,93 +91,19 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (state.phase === 'idle') return state
 
       if (state.phase === 'dropping') {
-        // After drop animation, check for merges — prefer the drop cell as merge target
-        const found = findAnyMerge(state.board, state.dropCell ?? undefined)
-        if (found) {
-          const { board, merge } = applyMerge(state.board, found.origin, found.group)
-          let highestTile = state.highestTile
-          if (merge.resultValue > highestTile) highestTile = merge.resultValue as MergeValue
-          const score = state.score + merge.resultValue
-          let highScore = state.highScore
-          if (score > highScore) { highScore = score; saveHighScore(highScore) }
-
-          return {
-            ...state,
-            board,
-            score,
-            highScore,
-            highestTile,
-            totalMerges: state.totalMerges + 1,
-            phase: 'merging',
-            currentMerge: merge,
-            dropCell: null,
-          }
-        }
-        // No merge — settle
-        const gameOver = checkGameOver(state.board)
-        if (gameOver) clearGame()
-        return { ...state, phase: 'idle', currentMerge: null, dropCell: null, gameOver }
+        return tryMerge(state, state.board, state.dropCell ?? undefined) ?? settle(state)
       }
 
       if (state.phase === 'merging') {
-        // After merge animation, apply gravity
         const { board, moved } = applyGravity(state.board)
         if (moved) {
           return { ...state, board, phase: 'gravity', currentMerge: null }
         }
-        // No gravity needed — check for more merges
-        const found = findAnyMerge(state.board)
-        if (found) {
-          const { board: mergedBoard, merge } = applyMerge(state.board, found.origin, found.group)
-          let highestTile = state.highestTile
-          if (merge.resultValue > highestTile) highestTile = merge.resultValue as MergeValue
-          const score = state.score + merge.resultValue
-          let highScore = state.highScore
-          if (score > highScore) { highScore = score; saveHighScore(highScore) }
-
-          return {
-            ...state,
-            board: mergedBoard,
-            score,
-            highScore,
-            highestTile,
-            totalMerges: state.totalMerges + 1,
-            phase: 'merging',
-            currentMerge: merge,
-          }
-        }
-        // No more merges — settle
-        const gameOver = checkGameOver(state.board)
-        if (gameOver) clearGame()
-        return { ...state, phase: 'idle', currentMerge: null, gameOver }
+        return tryMerge(state, state.board) ?? settle(state)
       }
 
       if (state.phase === 'gravity') {
-        // After gravity animation, check for new merges
-        const found = findAnyMerge(state.board)
-        if (found) {
-          const { board, merge } = applyMerge(state.board, found.origin, found.group)
-          let highestTile = state.highestTile
-          if (merge.resultValue > highestTile) highestTile = merge.resultValue as MergeValue
-          const score = state.score + merge.resultValue
-          let highScore = state.highScore
-          if (score > highScore) { highScore = score; saveHighScore(highScore) }
-
-          return {
-            ...state,
-            board,
-            score,
-            highScore,
-            highestTile,
-            totalMerges: state.totalMerges + 1,
-            phase: 'merging',
-            currentMerge: merge,
-          }
-        }
-        // No merges after gravity — settle
-        const gameOver = checkGameOver(state.board)
-        if (gameOver) clearGame()
-        return { ...state, phase: 'idle', currentMerge: null, gameOver }
+        return tryMerge(state, state.board) ?? settle(state)
       }
 
       return state

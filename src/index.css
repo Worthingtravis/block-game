@@ -956,7 +956,11 @@ html, body, #root {
 }
 
 .merge-cell--empty:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.merge-cell--col-hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .merge-cell--merging {
@@ -976,15 +980,21 @@ html, body, #root {
 
 @keyframes mergePop {
   0% {
-    transform: scale(0.5);
-    opacity: 0.5;
+    transform: scale(0.4);
+    opacity: 0.4;
   }
-  50% {
-    transform: scale(1.35);
+  40% {
+    transform: scale(1.3);
     opacity: 1;
   }
-  70% {
-    transform: scale(0.95);
+  60% {
+    transform: scale(0.92);
+  }
+  75% {
+    transform: scale(1.06);
+  }
+  90% {
+    transform: scale(0.98);
   }
   100% {
     transform: scale(1);
@@ -1039,4 +1049,16 @@ html, body, #root {
   font-size: 1.4rem;
   opacity: 1;
   box-shadow: 0 0 16px rgba(255, 255, 255, 0.15);
+  animation: queuePulse 2s ease-in-out infinite;
+}
+
+@keyframes queuePulse {
+  0%, 100% {
+    box-shadow: 0 0 16px rgba(255, 255, 255, 0.15);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+  }
 }

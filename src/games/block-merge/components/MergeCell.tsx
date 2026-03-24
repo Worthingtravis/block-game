@@ -6,12 +6,24 @@ type MergeCellProps = {
   value: MergeValue | null
   merging?: boolean
   dropping?: boolean
+  columnHighlight?: boolean
   onClick?: () => void
+  onMouseEnter?: () => void
 }
 
-export default memo(function MergeCell({ value, merging, dropping, onClick }: MergeCellProps) {
+export default memo(function MergeCell({ value, merging, dropping, columnHighlight, onClick, onMouseEnter }: MergeCellProps) {
   if (!value) {
-    return <div className="merge-cell merge-cell--empty" onClick={onClick} />
+    const emptyClasses = columnHighlight
+      ? 'merge-cell merge-cell--empty merge-cell--col-hover'
+      : 'merge-cell merge-cell--empty'
+
+    return (
+      <div
+        className={emptyClasses}
+        onClick={onClick}
+        onMouseEnter={onMouseEnter}
+      />
+    )
   }
 
   const classes = [
@@ -25,6 +37,7 @@ export default memo(function MergeCell({ value, merging, dropping, onClick }: Me
       className={classes}
       style={{ backgroundColor: VALUE_COLORS[value] }}
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
       data-value={value}
     >
       {value}
