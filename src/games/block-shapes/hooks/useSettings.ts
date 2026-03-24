@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { setSoundEnabled, setMasterVolume } from '../audio/sounds'
+import { setSoundEnabled, setMasterVolume } from '../../../audio/core'
 import { setVibrationEnabled } from '../audio/haptics'
 
 export type Theme = 'dark' | 'midnight' | 'light'

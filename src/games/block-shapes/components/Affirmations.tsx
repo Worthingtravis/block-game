@@ -37,6 +37,7 @@ function computeSizeClass(linesCleared: number, combo: number): string {
 }
 
 const DURATION = 1200
+const MAX_ITEMS = 10
 
 let nextId = 0
 
@@ -55,14 +56,17 @@ export default function Affirmations({ lastClear, comboMultiplier }: Affirmation
     if (lastClear && lastClear.linesCleared > 0) {
       const text = pickMessage(lastClear.linesCleared, comboMultiplier)
       const sc = computeSizeClass(lastClear.linesCleared, comboMultiplier)
-      setItems(prev => [...prev, {
-        id: nextId++,
-        text,
-        sizeClass: sc,
-        x: 30 + Math.random() * 40,
-        y: 20 + Math.random() * 30,
-        expiresAt: Date.now() + DURATION,
-      }])
+      setItems(prev => {
+        const next = [...prev, {
+          id: nextId++,
+          text,
+          sizeClass: sc,
+          x: 30 + Math.random() * 40,
+          y: 20 + Math.random() * 30,
+          expiresAt: Date.now() + DURATION,
+        }]
+        return next.length > MAX_ITEMS ? next.slice(-MAX_ITEMS) : next
+      })
     }
   }
 

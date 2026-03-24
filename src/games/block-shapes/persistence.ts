@@ -89,33 +89,18 @@ export function replayGameSteps(game: StoredGame): ReplayStep[] {
 }
 
 export function replayGame(game: StoredGame, highScore: number): GameState {
-  const initialPieces = game.initial_pieces.map(pieceFromStored) as [Piece | null, Piece | null, Piece | null]
-
-  let state: GameState = {
+  const steps = replayGameSteps(game)
+  const finalState = steps.length > 0 ? steps[steps.length - 1].state : {
     board: createEmptyBoard(),
-    pieces: initialPieces,
+    pieces: game.initial_pieces.map(pieceFromStored) as [Piece | null, Piece | null, Piece | null],
     score: 0,
-    highScore,
+    highScore: 0,
     comboMultiplier: 1,
     bombs: 0,
     gameOver: false,
     lastClear: null,
   }
-
-  const sorted = [...game.moves].sort((a, b) => a.move_number - b.move_number)
-
-  for (const move of sorted) {
-    const position: Cell = { row: move.position_row, col: move.position_col }
-    state = gameReducer(state, { type: 'PLACE_PIECE', pieceIndex: move.piece_index, position })
-
-    // Override random piece sets with the stored ones for deterministic replay
-    if (move.next_pieces) {
-      const pieces = move.next_pieces.map(pieceFromStored) as [Piece | null, Piece | null, Piece | null]
-      state = { ...state, pieces }
-    }
-  }
-
-  return state
+  return { ...finalState, highScore }
 }
 
 const LOCAL_GAME_KEY = 'block-shapes-current-game'

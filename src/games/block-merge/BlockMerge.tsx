@@ -8,7 +8,6 @@ import OptionsModal from '../block-shapes/components/OptionsModal'
 import { useSettings } from '../block-shapes/hooks/useSettings'
 import { useGameState } from './hooks/useGameState'
 import { useAudio } from './hooks/useAudio'
-import type { Cell } from './game/types'
 import { BOARD_SIZE, VALUE_COLORS } from './game/types'
 
 type BlockMergeProps = {
@@ -58,10 +57,6 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
     }
   }, [state.lastMerges])
 
-  const handleCellClick = useCallback((position: Cell) => {
-    placeBlock(position)
-  }, [placeBlock])
-
   const handleRestart = useCallback(() => {
     setOptionsOpen(false)
     newGame()
@@ -95,7 +90,7 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
       <div ref={boardRef} className="board-wrapper">
         <MergeBoard
           board={state.board}
-          onCellClick={handleCellClick}
+          onCellClick={placeBlock}
           lastMerges={state.lastMerges}
           disabled={state.gameOver}
         />
