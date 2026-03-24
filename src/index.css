@@ -1428,3 +1428,114 @@ html, body, #root {
   60% { transform: scale(1.1); opacity: 1; }
   100% { transform: scale(1); }
 }
+
+/* ===== Block Hex ===== */
+
+.hex-board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px;
+}
+
+.hex-row {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.hex-cell {
+  width: 52px;
+  height: 60px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  transition: transform 150ms ease;
+  position: relative;
+}
+
+.hex-cell--empty {
+  background: var(--bg-cell-empty);
+}
+
+.hex-cell:hover:not(.hex-cell--empty) {
+  transform: scale(1.05);
+}
+
+.hex-cell--empty:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.hex-cell--matching {
+  animation: hexPop 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hex-cell__depth {
+  position: absolute;
+  bottom: 14px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.85);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+
+@keyframes hexPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* Tile Queue */
+
+.tile-queue {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 8px 16px;
+}
+
+.tile-queue__tile {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: center;
+  opacity: 0.6;
+  transform: scale(0.85);
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.tile-queue__tile--current {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.tile-queue__layer {
+  width: 36px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+/* Hex preview for menu card */
+
+.hex-preview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  padding: 4px;
+}
+
+.hex-preview-cell {
+  width: 18px;
+  height: 20px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  border-radius: 2px;
+}

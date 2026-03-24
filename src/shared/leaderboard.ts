@@ -28,6 +28,10 @@ function getLocalScores(): LeaderboardEntry[] {
   if (mergeScore > 0) {
     entries.push({ user_id: 'You', score: mergeScore, game_type: 'block-merge', ended_at: '' })
   }
+  const hexScore = parseInt(localStorage.getItem('block-hex-high-score') || '0', 10)
+  if (hexScore > 0) {
+    entries.push({ user_id: 'You', score: hexScore, game_type: 'block-hex', ended_at: '' })
+  }
   return entries
 }
 

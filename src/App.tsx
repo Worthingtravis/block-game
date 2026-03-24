@@ -10,8 +10,9 @@ import { useSettings } from './shared/useSettings'
 
 const BlockShapes = lazy(() => import('./games/block-shapes/BlockShapes'))
 const BlockMerge = lazy(() => import('./games/block-merge/BlockMerge'))
+const BlockHex = lazy(() => import('./games/block-hex/BlockHex'))
 
-type Page = 'menu' | 'block-shapes' | 'block-merge' | 'leaderboard'
+type Page = 'menu' | 'block-shapes' | 'block-merge' | 'block-hex' | 'leaderboard'
 
 export default function App() {
   const [activePage, setActivePage] = useState<Page>('menu')
@@ -39,6 +40,14 @@ export default function App() {
     return (
       <Suspense fallback={<div className="game-loading">Loading...</div>}>
         <BlockMerge onBack={() => setActivePage('menu')} />
+      </Suspense>
+    )
+  }
+
+  if (activePage === 'block-hex') {
+    return (
+      <Suspense fallback={<div className="game-loading">Loading...</div>}>
+        <BlockHex onBack={() => setActivePage('menu')} />
       </Suspense>
     )
   }
@@ -89,6 +98,20 @@ export default function App() {
             <div className="game-card__info">
               <span className="game-card__name">Block Merge</span>
               <span className="game-card__desc">Merge numbers, chain reactions</span>
+            </div>
+          </button>
+
+          <button className="game-card" onClick={() => setActivePage('block-hex')}>
+            <div className="game-card__preview game-card__preview--hex">
+              <div className="hex-preview-grid">
+                {['#4a90d9','#f44336','#ffdd44','#4caf50','#9c27b0','#4a90d9','#f44336','#ffdd44','#4caf50','#9c27b0','#4a90d9','#f44336','#ffdd44'].map((color, i) => (
+                  <div key={i} className="hex-preview-cell" style={{ backgroundColor: color }} />
+                ))}
+              </div>
+            </div>
+            <div className="game-card__info">
+              <span className="game-card__name">Hexa Sort</span>
+              <span className="game-card__desc">Sort colors, chain matches</span>
             </div>
           </button>
         </div>

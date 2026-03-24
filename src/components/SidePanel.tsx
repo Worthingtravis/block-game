@@ -1,6 +1,6 @@
 import { authClient } from '../auth'
 
-type Page = 'menu' | 'block-shapes' | 'block-merge' | 'leaderboard'
+type Page = 'menu' | 'block-shapes' | 'block-merge' | 'block-hex' | 'leaderboard'
 
 type SidePanelProps = {
   open: boolean
@@ -13,6 +13,7 @@ const NAV_ITEMS: { id: Page; label: string; icon: string }[] = [
   { id: 'menu', label: 'Home', icon: 'M3 12l9-9 9 9M5 10v10h5v-6h4v6h5V10' },
   { id: 'block-shapes', label: 'Block Shapes', icon: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4z' },
   { id: 'block-merge', label: 'Block Merge', icon: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' },
+  { id: 'block-hex', label: 'Hexa Sort', icon: 'M12 2l9 5v10l-9 5-9-5V7z' },
   { id: 'leaderboard', label: 'Leaderboard', icon: 'M8 21V11M16 21V7M12 21V3' },
 ]
 
