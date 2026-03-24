@@ -1,12 +1,20 @@
 import { memo } from 'react'
 import type { HexColor } from '../game/types'
 
-const COLOR_MAP: Record<HexColor, string> = {
+export const COLOR_MAP: Record<HexColor, string> = {
   blue: '#4a90d9',
   red: '#f44336',
   yellow: '#ffdd44',
   green: '#4caf50',
   purple: '#9c27b0',
+}
+
+const DARK_MAP: Record<HexColor, string> = {
+  blue: '#3a70b0',
+  red: '#c62828',
+  yellow: '#ccb030',
+  green: '#388e3c',
+  purple: '#7b1fa2',
 }
 
 type HexCellProps = {
@@ -16,28 +24,48 @@ type HexCellProps = {
   onClick: (index: number) => void
 }
 
-const HexCell = memo(function HexCell({ index, stack, isMatching, onClick }: HexCellProps) {
-  const topColor = stack.length > 0 ? stack[stack.length - 1] : null
-  const isEmpty = topColor === null
+const MAX_VISIBLE_LAYERS = 5
 
-  const style = topColor
-    ? { backgroundColor: COLOR_MAP[topColor] }
-    : undefined
+const HexCell = memo(function HexCell({ index, stack, isMatching, onClick }: HexCellProps) {
+  const isEmpty = stack.length === 0
+
+  if (isEmpty) {
+    return (
+      <div
+        className="hex-cell hex-cell--empty"
+        onClick={() => onClick(index)}
+        aria-label={`Cell ${index}, empty`}
+      />
+    )
+  }
+
+  // Show up to MAX_VISIBLE_LAYERS stacked behind the top
+  const visibleLayers = stack.slice(-MAX_VISIBLE_LAYERS)
 
   return (
     <div
-      className={[
-        'hex-cell',
-        isEmpty ? 'hex-cell--empty' : '',
-        isMatching ? 'hex-cell--matching' : '',
-      ].filter(Boolean).join(' ')}
-      style={style}
+      className={`hex-cell hex-cell--stacked${isMatching ? ' hex-cell--matching' : ''}`}
       onClick={() => onClick(index)}
-      aria-label={`Cell ${index}${topColor ? `, ${topColor}` : ', empty'}${stack.length > 1 ? `, depth ${stack.length}` : ''}`}
+      aria-label={`Cell ${index}, ${stack[stack.length - 1]}, depth ${stack.length}`}
     >
-      {stack.length > 1 && (
-        <span className="hex-cell__depth">{stack.length}</span>
-      )}
+      {visibleLayers.map((color, i) => {
+        const isTop = i === visibleLayers.length - 1
+        const offset = (visibleLayers.length - 1 - i) * 3
+        return (
+          <div
+            key={i}
+            className={`hex-layer${isTop ? ' hex-layer--top' : ''}`}
+            style={{
+              backgroundColor: isTop ? COLOR_MAP[color] : DARK_MAP[color],
+              bottom: `${offset}px`,
+              zIndex: i,
+              boxShadow: isTop
+                ? `0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3)`
+                : `0 1px 2px rgba(0,0,0,0.2)`,
+            }}
+          />
+        )
+      })}
     </div>
   )
 })
