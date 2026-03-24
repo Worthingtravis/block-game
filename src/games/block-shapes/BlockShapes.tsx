@@ -193,6 +193,10 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
     newGame()
   }, [newGame])
 
+  if (reviewing && replayGame) {
+    return <GameReplay game={replayGame} onClose={() => { setReviewing(false); setReplayGame(null) }} />
+  }
+
   return (
     <div className="game-container">
       <div className="top-bar">
@@ -293,9 +297,6 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
         />
       )}
 
-      {reviewing && replayGame && (
-        <GameReplay game={replayGame} onClose={() => { setReviewing(false); setReplayGame(null) }} />
-      )}
     </div>
   )
 }
