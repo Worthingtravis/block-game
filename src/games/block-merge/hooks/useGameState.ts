@@ -59,7 +59,7 @@ function tryMerge(state: GameState, board: Board, prefer?: { row: number; col: n
     phase: 'merging',
     currentMerge: merge,
     chainStep: state.chainStep + 1,
-    dropCell: null,
+    dropCell: merge.resultCell,
   }
 }
 
@@ -124,15 +124,17 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
 
       if (state.phase === 'merging') {
+        // Track where the last merge landed for directional preference
+        const preferCell = state.currentMerge?.resultCell ?? state.dropCell
         const { board, moved } = applyGravity(state.board)
         if (moved) {
-          return { ...state, board, phase: 'gravity', currentMerge: null }
+          return { ...state, board, phase: 'gravity', currentMerge: null, dropCell: preferCell ?? null }
         }
-        return tryMerge(state, state.board) ?? settle(state)
+        return tryMerge(state, state.board, preferCell ?? undefined) ?? settle(state)
       }
 
       if (state.phase === 'gravity') {
-        return tryMerge(state, state.board) ?? settle(state)
+        return tryMerge(state, state.board, state.dropCell ?? undefined) ?? settle(state)
       }
 
       return state
