@@ -104,7 +104,16 @@ export default function App() {
       <SidePanel open={sideOpen} onClose={() => setSideOpen(false)} onNavigate={navigate} currentPage={activePage} />
 
       <div className="menu-container">
-        <h1 className="menu-title">Choose a game</h1>
+        <div className="menu-deco menu-deco--tl" />
+        <div className="menu-deco menu-deco--tr" />
+        <div className="menu-deco menu-deco--bl" />
+        <div className="menu-deco menu-deco--br" />
+
+        <h1 className="menu-title">
+          <span className="menu-title__block">BLOCK</span>
+          <span className="menu-title__games">GAMES</span>
+        </h1>
+        <p className="menu-subtitle">Choose your challenge</p>
 
         <div className="menu-grid">
           <button className="game-card" onClick={() => setActivePage('block-shapes')}>
