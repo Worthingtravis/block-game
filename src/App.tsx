@@ -14,6 +14,42 @@ const BlockHex = lazy(() => import('./games/block-hex/BlockHex'))
 
 type Page = 'menu' | 'block-shapes' | 'block-merge' | 'block-hex' | 'leaderboard'
 
+/* Mini honeycomb preview for the Hexa Sort menu card */
+const HEX_PREVIEW_ROWS = [
+  { cells: ['#4a90d9', '#f44336', '#ffdd44'], count: 3 },
+  { cells: ['#4caf50', '#9c27b0', '#4a90d9', '#f44336'], count: 4 },
+  { cells: ['#ffdd44', '#4caf50', '#9c27b0', '#4a90d9', '#f44336'], count: 5 },
+  { cells: ['#ffdd44', '#4caf50', '#9c27b0', '#4a90d9'], count: 4 },
+  { cells: ['#f44336', '#ffdd44', '#4caf50'], count: 3 },
+]
+
+function HexPreview() {
+  const maxCols = 5
+  let key = 0
+  return (
+    <div className="hex-preview-grid">
+      {HEX_PREVIEW_ROWS.map((row, rowIdx) =>
+        row.cells.map((color, colIdx) => {
+          const offset = (maxCols - row.count) / 2
+          const x = (colIdx + offset) // in units of --pw
+          const y = rowIdx            // in units of --pr
+          return (
+            <div
+              key={key++}
+              className="hex-preview-cell"
+              style={{
+                backgroundColor: color,
+                left: `calc(${x} * var(--pw))`,
+                top: `calc(${y} * var(--pr))`,
+              }}
+            />
+          )
+        })
+      )}
+    </div>
+  )
+}
+
 export default function App() {
   const [activePage, setActivePage] = useState<Page>('menu')
   const [sideOpen, setSideOpen] = useState(false)
@@ -103,11 +139,7 @@ export default function App() {
 
           <button className="game-card" onClick={() => setActivePage('block-hex')}>
             <div className="game-card__preview game-card__preview--hex">
-              <div className="hex-preview-grid">
-                {['#4a90d9','#f44336','#ffdd44','#4caf50','#9c27b0','#4a90d9','#f44336','#ffdd44','#4caf50','#9c27b0','#4a90d9','#f44336','#ffdd44'].map((color, i) => (
-                  <div key={i} className="hex-preview-cell" style={{ backgroundColor: color }} />
-                ))}
-              </div>
+              <HexPreview />
             </div>
             <div className="game-card__info">
               <span className="game-card__name">Hexa Sort</span>
