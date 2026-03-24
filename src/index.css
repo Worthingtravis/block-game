@@ -1431,116 +1431,98 @@ html, body, #root {
 
 /* ===== Block Hex ===== */
 
-/*
- * Honeycomb layout with CSS custom properties.
- * --hex-w: hex cell width (responsive)
- * --hex-h: hex cell height = hex-w * 1.1547 (flat-top hex ratio 2/sqrt(3))
- * --hex-row-h: vertical row spacing = hex-h * 0.75 (interlocking rows)
- *
- * Board holds 5 rows (3-4-5-4-3 = 19 cells).
- * Width  = 5 * hex-w
- * Height = 4 * row-h + hex-h  (4 row gaps + one full hex height)
- * Extra bottom padding for 3D stack overshoot.
- */
-
 .hex-board {
-  --hex-w: 62px;
-  --hex-h: calc(var(--hex-w) * 1.1547);
-  --hex-row-h: calc(var(--hex-h) * 0.76);
+  --hex-w: 60px;
+  --hex-h: calc(var(--hex-w) * 1.155);
+  --hex-row-h: calc(var(--hex-h) * 0.75);
+  --hex-gap: 3px;
 
   position: relative;
-  width: calc(6.2 * var(--hex-w));
-  height: calc(4 * var(--hex-row-h) + var(--hex-h) + 24px);
+  width: calc(6 * var(--hex-w) + 5 * var(--hex-gap));
+  height: calc(4 * var(--hex-row-h) + var(--hex-h) + 20px);
   margin: 0 auto;
-  padding: 0;
-  transform: perspective(600px) rotateX(6deg);
-  transform-origin: center bottom;
 }
 
-/* Wrapper for absolute positioning of each cell */
-.hex-cell-wrapper {
+.hex-cell-pos {
   position: absolute;
   width: var(--hex-w);
-  /* height set by the cell inside */
+  height: var(--hex-h);
 }
 
+/* Base hex cell */
 .hex-cell {
-  width: var(--hex-w);
-  height: var(--hex-h);
+  width: 100%;
+  height: 100%;
   position: relative;
   cursor: pointer;
   transition: transform 150ms ease;
 }
 
+/* Empty cell — slightly smaller for gap effect */
 .hex-cell--empty {
-  width: 92%;
-  height: 92%;
-  margin: 4% 0 0 4%;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  background: var(--bg-cell-empty);
+  background: rgba(255, 255, 255, 0.06);
+  transition: background 150ms, transform 150ms;
 }
 
 .hex-cell--empty:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.12);
 }
 
-.hex-cell--stacked {
+/* Filled cell — contains stacked hex discs */
+.hex-cell--filled {
   overflow: visible;
 }
 
-.hex-cell--stacked:hover {
-  transform: translateY(-3px);
+.hex-cell--filled:hover {
+  transform: translateY(-2px);
 }
 
 .hex-cell--matching {
   animation: hexPop 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* 3D stacked hex layers */
-.hex-layer {
+/* Individual 3D hex disc (stacked layer) */
+.hex-disc {
   position: absolute;
   left: 0;
+  top: var(--disc-depth, 0px);
   width: 100%;
-  height: var(--hex-h);
+  height: 100%;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  transition: bottom 200ms ease, transform 200ms ease;
+  background: var(--disc-edge);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.hex-layer--top {
-  filter: brightness(1.1);
+.hex-disc--top {
+  background: var(--disc-face);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35), inset 0 2px 0 rgba(255, 255, 255, 0.2);
 }
 
 @keyframes hexPop {
   0% { transform: scale(1); }
-  40% { transform: scale(1.2) translateY(-5px); }
+  40% { transform: scale(1.15); }
   100% { transform: scale(1); }
 }
 
-/* Responsive hex size for small screens */
 @media (max-width: 420px) {
-  .hex-board {
-    --hex-w: 52px;
-  }
+  .hex-board { --hex-w: 50px; }
 }
 
 /* Tile Queue */
 
 .tile-queue {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   align-items: flex-end;
   justify-content: center;
-  padding: 16px;
+  padding: 16px 0;
 }
 
 .tile-queue__tile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  opacity: 0.5;
-  transform: scale(0.8);
-  transition: opacity 150ms ease, transform 150ms ease;
+  opacity: 0.45;
+  transform: scale(0.75);
+  transition: opacity 150ms, transform 150ms;
 }
 
 .tile-queue__tile--current {
@@ -1550,27 +1532,35 @@ html, body, #root {
 
 .tile-queue__hex-stack {
   position: relative;
-  width: 50px;
-  height: 64px;
+  width: 48px;
+  height: calc(48px * 1.155 + 12px);
 }
 
-.tile-queue__hex-layer {
+.tile-queue__hex-disc {
   position: absolute;
   left: 0;
+  top: var(--disc-depth, 0px);
   width: 100%;
-  height: 56px;
+  height: calc(48px * 1.155);
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: var(--disc-edge);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
 }
 
-/* Hex preview for menu card — mini honeycomb */
+.tile-queue__hex-disc--top {
+  background: var(--disc-face);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Menu preview */
 
 .hex-preview-grid {
-  --pw: 18px;
-  --ph: calc(var(--pw) * 1.1547);
+  --pw: 20px;
+  --ph: calc(var(--pw) * 1.155);
   --pr: calc(var(--ph) * 0.75);
 
   position: relative;
-  width: calc(5 * var(--pw));
+  width: calc(6 * var(--pw));
   height: calc(4 * var(--pr) + var(--ph));
   margin: 0 auto;
 }

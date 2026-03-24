@@ -1,35 +1,37 @@
-import type { Tile } from '../game/types'
-import { COLOR_MAP } from './HexCell'
+import type { TileVM } from '../block-hex.vm'
+import { HEX_COLORS } from '../block-hex.vm'
 
 type TileQueueProps = {
-  queue: [Tile, Tile, Tile]
+  tiles: [TileVM, TileVM, TileVM]
 }
 
-export default function TileQueue({ queue }: TileQueueProps) {
+const LAYER_OFFSET = 3
+
+export default function TileQueue({ tiles }: TileQueueProps) {
   return (
     <div className="tile-queue">
-      {queue.map((tile, tileIndex) => (
+      {tiles.map((tile, i) => (
         <div
-          key={tileIndex}
-          className={`tile-queue__tile${tileIndex === 0 ? ' tile-queue__tile--current' : ''}`}
-          aria-label={tileIndex === 0 ? 'Current tile' : `Upcoming tile ${tileIndex + 1}`}
+          key={i}
+          className={`tile-queue__tile${tile.isCurrent ? ' tile-queue__tile--current' : ''}`}
         >
           <div className="tile-queue__hex-stack">
-            {tile.map((color, layerIndex) => (
-              <div
-                key={layerIndex}
-                className="tile-queue__hex-layer"
-                style={{
-                  backgroundColor: COLOR_MAP[color],
-                  bottom: `${(tile.length - 1 - layerIndex) * 3}px`,
-                  zIndex: layerIndex,
-                  boxShadow: layerIndex === tile.length - 1
-                    ? '0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3)'
-                    : '0 1px 2px rgba(0,0,0,0.2)',
-                  filter: layerIndex === tile.length - 1 ? 'brightness(1.05)' : 'brightness(0.85)',
-                }}
-              />
-            ))}
+            {tile.layers.map((color, layerIndex, arr) => {
+              const isTop = layerIndex === arr.length - 1
+              const depth = (arr.length - 1 - layerIndex) * LAYER_OFFSET
+              const colors = HEX_COLORS[color]
+              return (
+                <div
+                  key={layerIndex}
+                  className={`tile-queue__hex-disc${isTop ? ' tile-queue__hex-disc--top' : ''}`}
+                  style={{
+                    '--disc-face': colors.face,
+                    '--disc-edge': colors.edge,
+                    '--disc-depth': `${depth}px`,
+                  } as React.CSSProperties}
+                />
+              )
+            })}
           </div>
         </div>
       ))}

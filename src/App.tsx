@@ -10,7 +10,7 @@ import { useSettings } from './shared/useSettings'
 
 const BlockShapes = lazy(() => import('./games/block-shapes/BlockShapes'))
 const BlockMerge = lazy(() => import('./games/block-merge/BlockMerge'))
-const BlockHex = lazy(() => import('./games/block-hex/BlockHex'))
+const BlockHex = lazy(() => import('./games/block-hex/BlockHex-connected'))
 
 type Page = 'menu' | 'block-shapes' | 'block-merge' | 'block-hex' | 'leaderboard'
 
