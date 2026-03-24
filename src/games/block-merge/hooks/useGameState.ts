@@ -111,7 +111,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         totalMerges,
         phase: 'dropping',
         currentMerge: null,
-        chainStep: instantMerge ? 1 : 0,
+        chainStep: instantMerge ? Math.max(state.chainStep, 1) : Math.max(state.chainStep - 1, 0),
         dropCell: { row, col },
       }
     }
