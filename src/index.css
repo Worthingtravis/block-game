@@ -367,14 +367,21 @@ html, body, #root {
   font-size: 32px;
 }
 
+.bottom-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 440px;
+}
+
 .piece-queue {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 12px;
   padding: 12px 0;
-  width: 100%;
-  max-width: 400px;
+  flex: 1;
   height: 170px;
 }
 
@@ -652,6 +659,59 @@ html, body, #root {
 
 .combo--pulsing {
   animation: comboPulse 300ms ease-out;
+}
+
+/* ===== Bomb ===== */
+
+.bomb-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  cursor: pointer;
+  transition: all 150ms ease;
+  flex-shrink: 0;
+}
+
+.bomb-btn:hover {
+  border-color: #ff6644;
+  background: rgba(255, 102, 68, 0.1);
+}
+
+.bomb-btn--active {
+  border-color: #ff6644;
+  background: rgba(255, 102, 68, 0.2);
+  box-shadow: 0 0 12px rgba(255, 102, 68, 0.4);
+  animation: bombPulse 800ms ease-in-out infinite;
+}
+
+.bomb-btn__icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.bomb-btn__count {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.board--bomb-mode {
+  cursor: crosshair;
+}
+
+.board--bomb-target {
+  cursor: crosshair;
+}
+
+@keyframes bombPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(255, 102, 68, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(255, 102, 68, 0.6); }
 }
 
 /* ===== Affirmations ===== */

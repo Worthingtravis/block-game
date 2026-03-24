@@ -31,6 +31,7 @@ export type GameState = {
   score: number
   highScore: number
   comboMultiplier: number
+  bombs: number
   gameOver: boolean
   lastClear: ClearResult | null
 }
@@ -50,5 +51,6 @@ export type ClearResult = {
 
 export type GameAction =
   | { type: 'PLACE_PIECE'; pieceIndex: number; position: Cell }
+  | { type: 'USE_BOMB'; position: Cell }
   | { type: 'NEW_GAME' }
   | { type: 'LOAD_STATE'; state: GameState }

@@ -1,6 +1,6 @@
 import { useReducer, useCallback, useEffect, useRef } from 'react'
 import type { GameState, GameAction, Cell } from '../game/types'
-import { createEmptyBoard, isValidPlacement, stampPiece, findClears, applyClear, canAnyPieceFit } from '../game/engine'
+import { createEmptyBoard, isValidPlacement, stampPiece, findClears, applyClear, applyBomb, canAnyPieceFit } from '../game/engine'
 import { calculatePlacementScore, calculateClearScore, updateCombo } from '../game/scoring'
 import { generatePieceSet, generateFairPieceSet } from '../game/pieces'
 import { getStateFromUrl, setStateToUrl } from '../game/serialize'
@@ -29,6 +29,7 @@ function buildGameState(overrides: Partial<GameState> = {}): GameState {
     score: 0,
     highScore: loadHighScore(),
     comboMultiplier: 1,
+    bombs: 0,
     gameOver: false,
     lastClear: null,
     ...overrides,
@@ -54,6 +55,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const comboMultiplier = updateCombo(clears.linesCleared, state.comboMultiplier)
       score += calculateClearScore(clears, comboMultiplier)
 
+      // Award a bomb when combo reaches 4
+      const earnedBomb = comboMultiplier >= 4 && state.comboMultiplier < 4
+      const bombs = state.bombs + (earnedBomb ? 1 : 0)
+
       const pieces = [...state.pieces] as [typeof state.pieces[0], typeof state.pieces[1], typeof state.pieces[2]]
       pieces[pieceIndex] = null
 
@@ -69,8 +74,32 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const gameOver = !canAnyPieceFit(board, nextPieces)
 
       return {
-        board, pieces: nextPieces, score, highScore, comboMultiplier, gameOver,
+        board, pieces: nextPieces, score, highScore, comboMultiplier, bombs, gameOver,
         lastClear: clears.linesCleared > 0 ? clears : null,
+      }
+    }
+
+    case 'USE_BOMB': {
+      if (state.bombs <= 0) return state
+      const { position } = action
+      const { board, clearResult } = applyBomb(state.board, position)
+
+      let highScore = state.highScore
+      const score = state.score
+      if (score > highScore) {
+        highScore = score
+        saveHighScore(highScore)
+      }
+
+      const gameOver = !canAnyPieceFit(board, state.pieces)
+
+      return {
+        ...state,
+        board,
+        bombs: state.bombs - 1,
+        highScore,
+        gameOver,
+        lastClear: clearResult.clearedCells.length > 0 ? clearResult : null,
       }
     }
 
@@ -153,6 +182,10 @@ export function useGameState(opts?: UseGameStateOptions) {
   const placePiece = useCallback((pieceIndex: number, position: Cell) => {
     pendingMoveRef.current = { pieceIndex, position }
     dispatch({ type: 'PLACE_PIECE', pieceIndex, position })
+  }, [])
+
+  const useBomb = useCallback((position: Cell) => {
+    dispatch({ type: 'USE_BOMB', position })
   }, [])
 
   const newGame = useCallback(() => {
@@ -253,5 +286,5 @@ export function useGameState(opts?: UseGameStateOptions) {
     return () => window.removeEventListener('hashchange', onHashChange)
   }, [])
 
-  return { state, placePiece, newGame, loadState }
+  return { state, placePiece, useBomb, newGame, loadState }
 }

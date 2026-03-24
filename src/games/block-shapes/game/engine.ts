@@ -66,6 +66,35 @@ export function applyClear(board: Board, clearResult: ClearResult): Board {
   return newBoard
 }
 
+export function applyBomb(board: Board, position: Cell): { board: Board; clearResult: ClearResult } {
+  const newBoard = board.map(row => [...row])
+  const cellSet = new Set<string>()
+  const clearedCells: Cell[] = []
+
+  const addCell = (row: number, col: number) => {
+    const key = `${row},${col}`
+    if (!cellSet.has(key) && newBoard[row][col] !== null) {
+      cellSet.add(key)
+      clearedCells.push({ row, col })
+      newBoard[row][col] = null
+    }
+  }
+
+  // Clear entire row and column through the bomb position
+  for (let col = 0; col < BOARD_SIZE; col++) addCell(position.row, col)
+  for (let row = 0; row < BOARD_SIZE; row++) addCell(row, position.col)
+
+  return {
+    board: newBoard,
+    clearResult: {
+      clearedRows: [position.row],
+      clearedCols: [position.col],
+      clearedCells,
+      linesCleared: clearedCells.length > 0 ? 2 : 0,
+    },
+  }
+}
+
 export function canAllPiecesFit(board: Board, pieces: Piece[]): boolean {
   if (pieces.length === 0) return true
   for (let i = 0; i < pieces.length; i++) {

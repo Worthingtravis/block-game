@@ -58,6 +58,7 @@ export function replayGame(game: StoredGame, highScore: number): GameState {
     score: 0,
     highScore,
     comboMultiplier: 1,
+    bombs: 0,
     gameOver: false,
     lastClear: null,
   }

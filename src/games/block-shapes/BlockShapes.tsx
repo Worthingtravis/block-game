@@ -8,7 +8,8 @@ import ParticleCanvas from './components/ParticleCanvas'
 import Affirmations from './components/Affirmations'
 import OptionsModal from './components/OptionsModal'
 import type { ParticleCanvasHandle } from './components/ParticleCanvas'
-import type { Piece } from './game/types'
+import type { Piece, Cell } from './game/types'
+import { BOARD_SIZE } from './game/types'
 import { useGameState } from './hooks/useGameState'
 import { useDragDrop } from './hooks/useDragDrop'
 import { useAudio } from './hooks/useAudio'
@@ -25,12 +26,13 @@ type BlockShapesProps = {
 }
 
 export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
-  const { state, placePiece, newGame } = useGameState({ syncService })
+  const { state, placePiece, useBomb, newGame } = useGameState({ syncService })
   const { settings, update: updateSettings } = useSettings()
   const boardRef = useRef<HTMLDivElement>(null)
   const particleRef = useRef<ParticleCanvasHandle>(null)
   const [boardSize, setBoardSize] = useState({ width: 400, height: 400 })
   const [optionsOpen, setOptionsOpen] = useState(false)
+  const [bombMode, setBombMode] = useState(false)
 
   useAudio(state)
 
@@ -52,9 +54,10 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
     })
 
   const handleDragStart = useCallback((index: number, piece: Piece, clientX: number, clientY: number) => {
+    if (bombMode) return
     playPickUp()
     rawDragStart(index, piece, clientX, clientY)
-  }, [rawDragStart])
+  }, [rawDragStart, bombMode])
 
   const handlePointerUp = useCallback(() => {
     if (dragState.draggedPieceIndex !== null && dragState.hoverPosition && dragState.placementValidity === false) {
@@ -98,8 +101,31 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
 
   const handleRestart = useCallback(() => {
     setOptionsOpen(false)
+    setBombMode(false)
     newGame()
   }, [newGame])
+
+  const handleBoardClick = useCallback((e: React.PointerEvent) => {
+    if (!bombMode || state.bombs <= 0) return
+    const el = boardRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const padding = parseFloat(getComputedStyle(el).padding) || 6
+    const innerW = rect.width - padding * 2
+    const innerH = rect.height - padding * 2
+    const col = Math.floor(((e.clientX - rect.left - padding) / innerW) * BOARD_SIZE)
+    const row = Math.floor(((e.clientY - rect.top - padding) / innerH) * BOARD_SIZE)
+    if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) return
+    playPlace()
+    vibratePlace()
+    useBomb({ row, col })
+    setBombMode(false)
+  }, [bombMode, state.bombs, useBomb])
+
+  // Cancel bomb mode if bombs run out
+  useEffect(() => {
+    if (state.bombs <= 0) setBombMode(false)
+  }, [state.bombs])
 
   return (
     <div className="game-container">
@@ -128,7 +154,8 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
 
       <div
         ref={boardRef}
-        className={`board-wrapper${shaking ? ' board--shaking' : ''}`}
+        className={`board-wrapper${shaking ? ' board--shaking' : ''}${bombMode ? ' board--bomb-mode' : ''}`}
+        onPointerDown={bombMode ? handleBoardClick : undefined}
       >
         <Board
           board={state.board}
@@ -136,15 +163,28 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
           previewColor={draggedPiece?.color}
           previewValid={dragState.placementValidity}
           clearingCells={clearingCells.length > 0 ? clearingCells : undefined}
+          bombMode={bombMode}
         />
         <ParticleCanvas ref={particleRef} width={boardSize.width} height={boardSize.height} />
         <Affirmations lastClear={state.lastClear} comboMultiplier={state.comboMultiplier} />
       </div>
 
-      <PieceQueue
-        pieces={state.pieces}
-        onDragStart={handleDragStart}
-      />
+      <div className="bottom-controls">
+        <PieceQueue
+          pieces={state.pieces}
+          onDragStart={handleDragStart}
+        />
+        {state.bombs > 0 && (
+          <button
+            className={`bomb-btn${bombMode ? ' bomb-btn--active' : ''}`}
+            onClick={() => setBombMode(prev => !prev)}
+            aria-label={`Use bomb (${state.bombs} available)`}
+          >
+            <span className="bomb-btn__icon">💣</span>
+            <span className="bomb-btn__count">{state.bombs}</span>
+          </button>
+        )}
+      </div>
 
       {dragPosition && draggedPiece && (
         <div

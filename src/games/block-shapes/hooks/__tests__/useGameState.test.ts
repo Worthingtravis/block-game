@@ -68,6 +68,7 @@ describe('gameReducer NEW_GAME', () => {
       score: 500,
       highScore: 500,
       comboMultiplier: 3,
+      bombs: 0,
       gameOver: true,
       lastClear: null,
     }
