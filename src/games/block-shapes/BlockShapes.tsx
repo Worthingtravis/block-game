@@ -15,7 +15,7 @@ import { useDragDrop } from './hooks/useDragDrop'
 import { useAudio } from './hooks/useAudio'
 import { useBoardEffects } from './hooks/useBoardEffects'
 import { useSettings } from './hooks/useSettings'
-import { playPickUp, playPlace, playInvalidDrop } from './audio/sounds'
+import { playPickUp, playPlace, playInvalidDrop, playBombExplode } from './audio/sounds'
 import { vibratePlace } from './audio/haptics'
 
 import type { GameSyncService } from './game-sync'
@@ -116,7 +116,7 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
     const col = Math.floor(((e.clientX - rect.left - padding) / innerW) * BOARD_SIZE)
     const row = Math.floor(((e.clientY - rect.top - padding) / innerH) * BOARD_SIZE)
     if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) return
-    playPlace()
+    playBombExplode()
     vibratePlace()
     useBomb({ row, col })
     setBombMode(false)

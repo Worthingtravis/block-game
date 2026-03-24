@@ -57,7 +57,29 @@ export function playLineClear(linesCleared: number) {
 }
 
 export function playCombo(comboLevel: number) {
-  playTone(300 + comboLevel * 100, 0.2, 'sine', 0.2)
+  const baseFreq = 300 + comboLevel * 80
+  const volume = Math.min(0.15 + comboLevel * 0.04, 0.4)
+  const duration = 0.15 + comboLevel * 0.05
+
+  // Rising arpeggio — more notes at higher combos
+  const notes = Math.min(comboLevel, 5)
+  for (let i = 0; i < notes; i++) {
+    setTimeout(() => {
+      playTone(baseFreq + i * 60, duration, 'sine', volume)
+    }, i * 60)
+  }
+}
+
+export function playBombExplode() {
+  playTone(80, 0.4, 'sawtooth', 0.35)
+  setTimeout(() => playTone(60, 0.6, 'sawtooth', 0.25), 50)
+  setTimeout(() => playTone(200, 0.2, 'sine', 0.2), 100)
+}
+
+export function playBombEarned() {
+  playTone(500, 0.15, 'sine', 0.25)
+  setTimeout(() => playTone(700, 0.15, 'sine', 0.25), 80)
+  setTimeout(() => playTone(900, 0.2, 'sine', 0.3), 160)
 }
 
 export function playGameOver() {
