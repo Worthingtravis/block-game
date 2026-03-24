@@ -25,7 +25,7 @@ function saveHighScore(score: number): void {
 function buildGameState(overrides: Partial<GameState> = {}): GameState {
   return {
     board: createEmptyBoard(),
-    pieces: generatePieceSet(),
+    pieces: generatePieceSet(0),
     score: 0,
     highScore: loadHighScore(),
     comboMultiplier: 1,

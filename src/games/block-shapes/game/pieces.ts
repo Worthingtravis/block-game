@@ -117,12 +117,12 @@ function getAvailableShapes(score: number): ShapeType[] {
   return available
 }
 
-function randomShape(score = 0): ShapeType {
-  const pool = score > 0 ? getAvailableShapes(score) : ALL_SHAPES
+function randomShape(score?: number): ShapeType {
+  const pool = score != null ? getAvailableShapes(score) : ALL_SHAPES
   return pool[Math.floor(Math.random() * pool.length)]
 }
 
-export function generatePiece(score = 0): Piece {
+export function generatePiece(score?: number): Piece {
   const shape = randomShape(score)
   return {
     id: crypto.randomUUID(),
@@ -132,13 +132,13 @@ export function generatePiece(score = 0): Piece {
   }
 }
 
-export function generatePieceSet(score = 0): [Piece, Piece, Piece] {
+export function generatePieceSet(score?: number): [Piece, Piece, Piece] {
   return [generatePiece(score), generatePiece(score), generatePiece(score)]
 }
 
 const MAX_FAIR_ATTEMPTS = 50
 
-export function generateFairPieceSet(board: Board, score = 0): [Piece, Piece, Piece] {
+export function generateFairPieceSet(board: Board, score?: number): [Piece, Piece, Piece] {
   let last = generatePieceSet(score)
   for (let i = 0; i < MAX_FAIR_ATTEMPTS; i++) {
     const candidate = i === 0 ? last : generatePieceSet(score)

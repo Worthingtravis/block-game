@@ -15,6 +15,7 @@ function buildDebugUrl(board: Board, pieces: [Piece | null, Piece | null, Piece 
     score,
     highScore: 0,
     comboMultiplier: 1,
+    bombs: 0,
     gameOver: false,
     lastClear: null,
   }
