@@ -16,12 +16,15 @@ import { useSettings } from './hooks/useSettings'
 import { playPickUp, playPlace, playInvalidDrop } from './audio/sounds'
 import { vibratePlace } from './audio/haptics'
 
+import type { GameSyncService } from './game-sync'
+
 type BlockShapesProps = {
   onBack: () => void
+  syncService?: GameSyncService | null
 }
 
-export default function BlockShapes({ onBack }: BlockShapesProps) {
-  const { state, placePiece, newGame } = useGameState()
+export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
+  const { state, placePiece, newGame } = useGameState({ syncService })
   const { settings, update: updateSettings } = useSettings()
   const boardRef = useRef<HTMLDivElement>(null)
   const particleRef = useRef<ParticleCanvasHandle>(null)

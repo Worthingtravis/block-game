@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { gameReducer, createInitialState } from '../useGameState'
+import { gameReducer, createFreshState } from '../useGameState'
 import type { GameState } from '../../game/types'
 import { BOARD_SIZE } from '../../game/types'
 
-describe('createInitialState', () => {
+describe('createFreshState', () => {
   it('creates initial state with empty board and 3 pieces', () => {
-    const state = createInitialState()
+    const state = createFreshState()
     expect(state.board).toHaveLength(BOARD_SIZE)
     expect(state.pieces.filter(p => p !== null)).toHaveLength(3)
     expect(state.score).toBe(0)
@@ -17,7 +17,7 @@ describe('createInitialState', () => {
 
 describe('gameReducer PLACE_PIECE', () => {
   it('stamps piece on board and adds placement score', () => {
-    const state = createInitialState()
+    const state = createFreshState()
     const piece = state.pieces[0]!
     const action = { type: 'PLACE_PIECE' as const, pieceIndex: 0, position: { row: 0, col: 0 } }
     const next = gameReducer(state, action)
@@ -28,7 +28,7 @@ describe('gameReducer PLACE_PIECE', () => {
   })
 
   it('generates new pieces when all 3 are placed', () => {
-    let state = createInitialState()
+    let state = createFreshState()
     // Place each piece in its own column band to avoid overlap
     for (let i = 0; i < 3; i++) {
       const piece = state.pieces[i]!
@@ -49,7 +49,7 @@ describe('gameReducer PLACE_PIECE', () => {
   })
 
   it('decrements combo by 1 when no lines are cleared', () => {
-    let state = createInitialState()
+    let state = createFreshState()
     state = { ...state, comboMultiplier: 5 }
     const next = gameReducer(state, {
       type: 'PLACE_PIECE',

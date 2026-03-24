@@ -1,5 +1,8 @@
-import { useState, lazy, Suspense } from 'react'
+import { useState, useMemo, lazy, Suspense } from 'react'
 import { authClient } from './auth'
+import { GameSyncService } from './games/block-shapes/game-sync'
+import { createNeonRepository } from './games/block-shapes/neon-repository'
+import { neonClient } from './db'
 
 const BlockShapes = lazy(() => import('./games/block-shapes/BlockShapes'))
 
@@ -35,11 +38,19 @@ function UserBar() {
 
 export default function App() {
   const [activeGame, setActiveGame] = useState<GameId>('menu')
+  const session = authClient.useSession()
+
+  // Create sync service only when signed in and Data API is configured
+  const syncService = useMemo(() => {
+    if (!session.data || !import.meta.env.VITE_NEON_DATA_API_URL) return null
+    const repo = createNeonRepository(neonClient as unknown as Parameters<typeof createNeonRepository>[0])
+    return new GameSyncService(repo)
+  }, [session.data])
 
   if (activeGame === 'block-shapes') {
     return (
       <Suspense fallback={<div className="game-loading">Loading...</div>}>
-        <BlockShapes onBack={() => setActiveGame('menu')} />
+        <BlockShapes onBack={() => setActiveGame('menu')} syncService={syncService} />
       </Suspense>
     )
   }
