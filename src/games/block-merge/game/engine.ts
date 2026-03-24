@@ -99,7 +99,8 @@ export function applyGravity(board: Board): { board: Board; moved: boolean } {
   return { board: newBoard, moved }
 }
 
-/** Drop a block into a column — returns the row it lands on, or -1 if full. */
+/** Drop a block into a column — returns the row it lands on, or -1 if truly full.
+ *  If the column is full but the top block matches the incoming value, merge them. */
 export function dropBlock(board: Board, col: number, value: number): { board: Board; row: number } {
   for (let r = BOARD_SIZE - 1; r >= 0; r--) {
     if (board[r][col] === null) {
@@ -107,6 +108,13 @@ export function dropBlock(board: Board, col: number, value: number): { board: Bo
       newBoard[r][col] = value
       return { board: newBoard, row: r }
     }
+  }
+  // Column is full — check if the top block matches for an instant merge
+  if (board[0][col] === value) {
+    const newBoard = board.map(row => [...row])
+    // Replace top block with merged value (value × 2)
+    newBoard[0][col] = value * 2
+    return { board: newBoard, row: 0 }
   }
   return { board, row: -1 }
 }
