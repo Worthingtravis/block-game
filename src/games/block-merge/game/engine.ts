@@ -116,8 +116,8 @@ export function dropBlock(board: Board, col: number, value: number): { board: Bo
   return { board, row: -1, instantMerge: false }
 }
 
-/** True when every cell is filled and no adjacent pair matches. */
-export function checkGameOver(board: Board): boolean {
+/** True when no moves are possible — board full, no adjacent matches, and no queue block can merge onto a top cell. */
+export function checkGameOver(board: Board, queue?: [number, number, number]): boolean {
   for (let r = 0; r < BOARD_SIZE; r++) {
     for (let c = 0; c < BOARD_SIZE; c++) {
       if (board[r][c] === null) return false
@@ -126,42 +126,30 @@ export function checkGameOver(board: Board): boolean {
       if (r + 1 < BOARD_SIZE && board[r + 1][c] === val) return false
     }
   }
+  // Board is full with no adjacent matches — check if any queue block can merge onto a column top
+  if (queue) {
+    for (const value of queue) {
+      for (let c = 0; c < BOARD_SIZE; c++) {
+        if (board[0][c] === value) return false
+      }
+    }
+  }
   return true
 }
 
-/** Check if a value exists anywhere on the board. */
-function boardHasValue(board: Board, value: number): boolean {
-  for (let r = 0; r < BOARD_SIZE; r++) {
-    for (let c = 0; c < BOARD_SIZE; c++) {
-      if (board[r][c] === value) return true
-    }
-  }
-  return false
+/** Remove all cells with a given value from the board. */
+export function purgeValue(board: Board, value: number): Board {
+  return board.map(row => row.map(cell => cell === value ? null : cell))
 }
 
-/**
- * Progressive block value generation.
- * Before phasing out a value, checks if it still exists on the board.
- * If it does, keeps offering it so the player can merge it away.
- */
-export function generateNextValue(score: number, board?: Board): number {
+/** Generate next block value, respecting the minimum value. */
+export function generateNextValue(score: number, minValue = 2): number {
   const rand = Math.random()
-
-  // If the board still has 2s, keep offering them regardless of score
-  const has2s = board ? boardHasValue(board, 2) : true
-
-  if (score >= 2000) {
-    if (has2s && rand < 0.15) return 2
-    return rand < 0.15 ? 16 : rand < 0.55 ? 8 : 4
-  }
-  if (score >= 1000) {
-    if (has2s && rand < 0.2) return 2
-    return rand < 0.3 ? 8 : 4
-  }
-  if (score >= 500) {
-    if (has2s) return rand < 0.4 ? 2 : 4
-    return rand < 0.15 ? 2 : 4
-  }
+  if (minValue >= 16) return rand < 0.5 ? 16 : 32
+  if (minValue >= 8) return rand < 0.3 ? 16 : rand < 0.7 ? 8 : minValue
+  if (minValue >= 4) return rand < 0.3 ? 8 : 4
+  // minValue is 2
+  if (score >= 500) return rand < 0.3 ? 2 : 4
   if (score >= 200) return rand < 0.5 ? 2 : 4
   return rand < 0.7 ? 2 : 4
 }

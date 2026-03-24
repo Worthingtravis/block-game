@@ -1,6 +1,7 @@
 import { useReducer, useCallback, useEffect, useState, useRef } from 'react'
 import type { GameState, GameAction, Board } from '../game/types'
-import { createEmptyBoard, dropBlock, findAnyMerge, applyMerge, applyGravity, checkGameOver, generateNextValue } from '../game/engine'
+import { LEVEL_UP_THRESHOLDS } from '../game/types'
+import { createEmptyBoard, dropBlock, findAnyMerge, applyMerge, applyGravity, checkGameOver, generateNextValue, purgeValue } from '../game/engine'
 import { calculateMergePoints, calculateChainBonus } from '../game/scoring'
 import { saveGame, loadGame, clearGame, loadHighScore, saveHighScore } from '../persistence'
 
@@ -19,6 +20,8 @@ function buildGameState(overrides: Partial<GameState> = {}): GameState {
     currentMerge: null,
     chainStep: 0,
     dropCell: null,
+    levelUpRemoved: null,
+    minValue: 2,
     ...overrides,
   }
 }
@@ -29,7 +32,6 @@ function createInitialState(): GameState {
   return buildGameState()
 }
 
-/** Try to find and apply a merge. Returns the updated state in 'merging' phase, or null if no merge found. */
 function tryMerge(state: GameState, board: Board, prefer?: { row: number; col: number }): GameState | null {
   const found = findAnyMerge(board, prefer)
   if (!found) return null
@@ -63,9 +65,41 @@ function tryMerge(state: GameState, board: Board, prefer?: { row: number; col: n
   }
 }
 
-/** Settle the board: check game over and return idle state. */
+/** Check if the score has crossed a level-up threshold. */
+function checkLevelUp(state: GameState): { removedValue: number; newMinValue: number } | null {
+  for (const [threshold, value] of LEVEL_UP_THRESHOLDS) {
+    if (state.score >= threshold && state.minValue <= value) {
+      return { removedValue: value, newMinValue: value * 2 }
+    }
+  }
+  return null
+}
+
 function settle(state: GameState): GameState {
-  const gameOver = checkGameOver(state.board)
+  // Check for level-up before checking game over
+  const levelUp = checkLevelUp(state)
+  if (levelUp) {
+    const purgedBoard = purgeValue(state.board, levelUp.removedValue)
+    const { board: settledBoard } = applyGravity(purgedBoard)
+
+    // Replace any queue blocks below new minimum
+    const newQueue = state.queue.map(v =>
+      v < levelUp.newMinValue ? generateNextValue(state.score, levelUp.newMinValue) : v
+    ) as [number, number, number]
+
+    return {
+      ...state,
+      board: settledBoard,
+      queue: newQueue,
+      phase: 'levelup',
+      currentMerge: null,
+      dropCell: null,
+      levelUpRemoved: levelUp.removedValue,
+      minValue: levelUp.newMinValue,
+    }
+  }
+
+  const gameOver = checkGameOver(state.board, state.queue)
   if (gameOver) clearGame()
 
   return { ...state, phase: 'idle', currentMerge: null, dropCell: null, gameOver }
@@ -74,7 +108,7 @@ function settle(state: GameState): GameState {
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'PLACE_BLOCK': {
-      if (state.phase !== 'idle' || state.gameOver) return state
+      if ((state.phase !== 'idle' && state.phase !== 'levelup') || state.gameOver) return state
 
       const col = action.col
       const value = state.queue[0]
@@ -98,7 +132,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const nextQueue: [number, number, number] = [
         state.queue[1],
         state.queue[2],
-        generateNextValue(score, board),
+        generateNextValue(score, state.minValue),
       ]
 
       return {
@@ -113,11 +147,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         currentMerge: null,
         chainStep: instantMerge ? Math.max(state.chainStep, 1) : Math.max(state.chainStep - 1, 0),
         dropCell: { row, col },
+        levelUpRemoved: null,
       }
     }
 
     case 'STEP': {
-      if (state.phase === 'idle') return state
+      if (state.phase === 'idle' || state.phase === 'levelup') return state
 
       if (state.phase === 'dropping') {
         return tryMerge(state, state.board, state.dropCell ?? undefined) ?? settle(state)
@@ -127,7 +162,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         const preferCell = state.currentMerge?.resultCell ?? state.dropCell
         const { board, moved } = applyGravity(state.board)
         if (moved && preferCell) {
-          // Find where the preferred cell's value ended up after gravity
           const val = state.board[preferCell.row][preferCell.col]
           let newPrefer = preferCell
           if (val !== null) {
@@ -177,9 +211,9 @@ export function useGameState() {
     dispatch({ type: 'NEW_GAME' })
   }, [])
 
-  // Auto-step when not idle
+  // Auto-step when animating
   useEffect(() => {
-    if (state.phase === 'idle') return
+    if (state.phase === 'idle' || state.phase === 'levelup') return
     const delay = state.phase === 'dropping' ? 250 : STEP_INTERVAL
     stepTimerRef.current = setTimeout(() => {
       dispatch({ type: 'STEP' })

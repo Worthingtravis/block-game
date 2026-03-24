@@ -101,6 +101,18 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
 
       <NextQueue queue={state.queue} />
 
+      {state.phase === 'levelup' && state.levelUpRemoved !== null && (
+        <div className="game-over-overlay">
+          <div className="game-over-panel level-up-panel">
+            <h1>LEVEL UP!</h1>
+            <div className="level-up-message">
+              All <span className="level-up-value">{state.levelUpRemoved}s</span> have been eliminated!
+            </div>
+            <div className="level-up-sub">Minimum block is now {state.minValue}</div>
+          </div>
+        </div>
+      )}
+
       {state.gameOver && (
         <div className="game-over-overlay">
           <div className="game-over-panel">
