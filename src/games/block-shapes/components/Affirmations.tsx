@@ -1,14 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useCallback } from 'react'
+import SharedAffirmations, { pickRandom } from '../../../shared/Affirmations'
 import type { ClearResult } from '../game/types'
-
-type Affirmation = {
-  id: number
-  text: string
-  sizeClass: string
-  x: number
-  y: number
-  expiresAt: number
-}
 
 const MESSAGES = {
   single: ['Nice!', 'Clean!', 'Sweet!', 'Smooth!', 'Yes!'],
@@ -16,10 +8,6 @@ const MESSAGES = {
   triple: ['INCREDIBLE!', 'UNSTOPPABLE!', 'TRIPLE THREAT!', 'GODLIKE!', 'LEGENDARY!'],
   quad: ['OBLITERATED!', 'ANNIHILATION!', 'PERFECTION!', 'ABSOLUTE BEAST!', 'SUPREME!'],
   combo: ['Combo x', 'On Fire x', 'Blazing x', 'Streak x'],
-}
-
-function pickRandom<T>(arr: readonly T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]
 }
 
 function pickMessage(linesCleared: number, combo: number): string {
@@ -36,67 +24,19 @@ function computeSizeClass(linesCleared: number, combo: number): string {
   return ''
 }
 
-const DURATION = 1200
-const MAX_ITEMS = 10
-
-let nextId = 0
-
-type AffirmationsProps = {
+type Props = {
   lastClear: ClearResult | null
   comboMultiplier: number
 }
 
-export default function Affirmations({ lastClear, comboMultiplier }: AffirmationsProps) {
-  const [items, setItems] = useState<Affirmation[]>([])
-  const [prevClear, setPrevClear] = useState<ClearResult | null>(null)
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  if (lastClear !== prevClear) {
-    setPrevClear(lastClear)
-    if (lastClear && lastClear.linesCleared > 0) {
-      const text = pickMessage(lastClear.linesCleared, comboMultiplier)
-      const sc = computeSizeClass(lastClear.linesCleared, comboMultiplier)
-      setItems(prev => {
-        const next = [...prev, {
-          id: nextId++,
-          text,
-          sizeClass: sc,
-          x: 30 + Math.random() * 40,
-          y: 20 + Math.random() * 30,
-          expiresAt: Date.now() + DURATION,
-        }]
-        return next.length > MAX_ITEMS ? next.slice(-MAX_ITEMS) : next
-      })
+export default function Affirmations({ lastClear, comboMultiplier }: Props) {
+  const getText = useCallback(() => {
+    if (!lastClear || lastClear.linesCleared <= 0) return null
+    return {
+      text: pickMessage(lastClear.linesCleared, comboMultiplier),
+      sizeClass: computeSizeClass(lastClear.linesCleared, comboMultiplier),
     }
-  }
+  }, [lastClear, comboMultiplier])
 
-  useEffect(() => {
-    if (items.length === 0) return
-
-    const now = Date.now()
-    const nextExpiry = Math.min(...items.map(i => i.expiresAt))
-    const delay = Math.max(0, nextExpiry - now)
-
-    timerRef.current = setTimeout(() => {
-      setItems(prev => prev.filter(i => i.expiresAt > Date.now()))
-    }, delay)
-
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current)
-    }
-  }, [items])
-
-  return (
-    <div className="affirmations-layer">
-      {items.map(item => (
-        <div
-          key={item.id}
-          className={`affirmation ${item.sizeClass}`}
-          style={{ left: `${item.x}%`, top: `${item.y}%` }}
-        >
-          {item.text}
-        </div>
-      ))}
-    </div>
-  )
+  return <SharedAffirmations trigger={lastClear} getText={getText} />
 }
