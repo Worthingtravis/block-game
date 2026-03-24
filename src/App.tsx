@@ -5,6 +5,7 @@ import { createNeonRepository } from './games/block-shapes/neon-repository'
 import { neonClient } from './db'
 
 const BlockShapes = lazy(() => import('./games/block-shapes/BlockShapes'))
+const BlockMerge = lazy(() => import('./games/block-merge/BlockMerge'))
 
 type GameId = 'menu' | 'block-shapes' | 'block-merge'
 
@@ -55,6 +56,14 @@ export default function App() {
     )
   }
 
+  if (activeGame === 'block-merge') {
+    return (
+      <Suspense fallback={<div className="game-loading">Loading...</div>}>
+        <BlockMerge onBack={() => setActiveGame('menu')} />
+      </Suspense>
+    )
+  }
+
   return (
     <div className="menu-container">
       <UserBar />
@@ -77,7 +86,7 @@ export default function App() {
           </div>
         </button>
 
-        <button className="game-card game-card--locked" disabled>
+        <button className="game-card" onClick={() => setActiveGame('block-merge')}>
           <div className="game-card__preview game-card__preview--merge">
             <div className="merge-preview-grid">
               {[2, 4, 8, 16, 32, 64, 128, 256, 512].map((n, i) => (
@@ -89,7 +98,7 @@ export default function App() {
           </div>
           <div className="game-card__info">
             <span className="game-card__name">Block Merge</span>
-            <span className="game-card__tag">Coming Soon</span>
+            <span className="game-card__desc">Merge numbers, chain reactions</span>
           </div>
         </button>
       </div>
