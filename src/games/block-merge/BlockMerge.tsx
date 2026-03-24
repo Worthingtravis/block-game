@@ -118,8 +118,8 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
         <div className="game-over-overlay">
           <div className="game-over-panel">
             <h1>Game Over</h1>
-            <div className="game-over-panel__score">Score: {state.score}</div>
-            <div className="game-over-panel__best">Best: {state.highScore}</div>
+            <div className="game-over-panel__score">Score: {state.score.toLocaleString('en-US')}</div>
+            <div className="game-over-panel__best">Best: {state.highScore.toLocaleString('en-US')}</div>
             <div className="game-over-panel__stats">
               <span>Highest: {formatValue(state.highestTile)}</span>
               <span>{state.totalMerges} merges</span>

@@ -37,12 +37,12 @@ export default function ScoreDisplay({ score, highScore, comboMultiplier }: Scor
     <div className="score-display">
       <div>
         <div className="score-display__label">HIGH</div>
-        <div className="score-display__value">{highScore}</div>
+        <div className="score-display__value">{highScore.toLocaleString('en-US')}</div>
       </div>
       <div>
         <div className="score-display__label score-display__label--main">SCORE</div>
         <div className={`score-display__value score-display__value--main${scorePopping ? ' score--popping' : ''}`}>
-          {score}
+          {score.toLocaleString('en-US')}
         </div>
       </div>
       <div>

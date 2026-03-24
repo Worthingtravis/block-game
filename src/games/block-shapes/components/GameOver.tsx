@@ -16,9 +16,9 @@ export default function GameOver({ score, highScore, onNewGame, onReview, moveCo
         {isNewBest && <div className="game-over-panel__crown">New Best!</div>}
         <h1>Game Over</h1>
         <div className={`game-over-panel__score${isNewBest ? ' game-over-panel__score--best' : ''}`}>
-          Score: {score}
+          Score: {score.toLocaleString('en-US')}
         </div>
-        <div className="game-over-panel__best">Best: {highScore}</div>
+        <div className="game-over-panel__best">Best: {highScore.toLocaleString('en-US')}</div>
         {(moveCount != null || maxCombo != null) && (
           <div className="game-over-panel__stats">
             {moveCount != null && <span>{moveCount} moves</span>}

@@ -680,21 +680,26 @@ html, body, #root {
 }
 
 .score-display__label {
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--text-secondary);
 }
 
 .score-display__label--main {
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .score-display__value {
-  font-size: 20px;
-  font-weight: bold;
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 .score-display__value--main {
-  font-size: 32px;
+  font-size: 28px;
 }
 
 .bottom-controls {

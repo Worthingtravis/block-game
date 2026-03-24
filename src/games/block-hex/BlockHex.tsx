@@ -41,9 +41,9 @@ export function BlockHexView(vm: BlockHexVM) {
             {vm.isNewBest && <div className="game-over-panel__crown">New Best!</div>}
             <h1>Game Over</h1>
             <div className={`game-over-panel__score${vm.isNewBest ? ' game-over-panel__score--best' : ''}`}>
-              Score: {vm.score}
+              Score: {vm.score.toLocaleString('en-US')}
             </div>
-            <div className="game-over-panel__best">Best: {vm.highScore}</div>
+            <div className="game-over-panel__best">Best: {vm.highScore.toLocaleString('en-US')}</div>
             <div className="game-over-panel__stats">
               <span>{vm.totalClears} clears</span>
             </div>
