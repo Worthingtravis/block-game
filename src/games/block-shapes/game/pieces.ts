@@ -100,13 +100,15 @@ const SHAPE_COLOR_MAP: Record<ShapeType, BlockColor> = {
   S1: 'lime', S2: 'lime',
 }
 
-// Difficulty tiers — shapes unlock as score increases
+// Difficulty tiers — start with line-filling pieces, add tricky shapes later
 const SHAPE_TIERS: { minScore: number; shapes: ShapeType[] }[] = [
-  { minScore: 0,   shapes: ['single', 'line2h', 'line2v', 'line3h', 'line3v', 'square2'] },
-  { minScore: 50,  shapes: ['L1', 'L2', 'L3', 'L4'] },
-  { minScore: 150, shapes: ['T1', 'T2', 'T3', 'T4', 'line4h', 'line4v'] },
-  { minScore: 300, shapes: ['Z1', 'Z2', 'S1', 'S2', 'square3'] },
-  { minScore: 500, shapes: ['line5h', 'line5v'] },
+  { minScore: 0,   shapes: [
+    'line2h', 'line2v', 'line3h', 'line3v', 'line4h', 'line4v', 'line5h', 'line5v',
+    'square2', 'square3',
+    'L1', 'L2', 'L3', 'L4',
+  ] },
+  { minScore: 100, shapes: ['T1', 'T2', 'T3', 'T4', 'single'] },
+  { minScore: 250, shapes: ['Z1', 'Z2', 'S1', 'S2'] },
 ]
 
 function getAvailableShapes(score: number): ShapeType[] {
