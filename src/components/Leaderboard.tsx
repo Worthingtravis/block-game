@@ -8,38 +8,56 @@ type LeaderboardEntry = {
   ended_at: string
 }
 
-async function fetchLeaderboard(gameType: string, limit = 20): Promise<LeaderboardEntry[]> {
-  try {
-    const client = neonClient as unknown as {
-      from: (table: string) => {
-        select: (columns?: string) => {
-          eq: (col: string, val: unknown) => {
-            eq: (col: string, val: unknown) => {
-              order: (col: string, opts?: { ascending: boolean }) => {
-                limit: (n: number) => Promise<{ data: Record<string, unknown>[]; error: unknown }>
-              }
-            }
-          }
-        }
-      }
-    }
-    const { data, error } = await client
-      .from('games')
-      .select('user_id,score,game_type,ended_at')
-      .eq('status', 'game_over')
-      .eq('game_type', gameType)
-      .order('score', { ascending: false })
-      .limit(limit)
+type ChainableQuery = {
+  eq: (col: string, val: unknown) => ChainableQuery
+  order: (col: string, opts?: { ascending: boolean }) => ChainableQuery
+  limit: (n: number) => ChainableQuery
+  then: Promise<{ data: Record<string, unknown>[]; error: unknown }>['then']
+}
 
-    if (error || !data) {
-      console.warn('Leaderboard fetch error:', error)
-      return []
-    }
-    return data as unknown as LeaderboardEntry[]
-  } catch (e) {
-    console.warn('Leaderboard fetch failed:', e)
-    return []
+type QueryClient = {
+  from: (table: string) => {
+    select: (columns?: string) => ChainableQuery
   }
+}
+
+function getLocalScores(): LeaderboardEntry[] {
+  const entries: LeaderboardEntry[] = []
+  const shapesScore = parseInt(localStorage.getItem('block-blast-high-score') || '0', 10)
+  if (shapesScore > 0) {
+    entries.push({ user_id: 'You', score: shapesScore, game_type: 'block-shapes', ended_at: '' })
+  }
+  const mergeScore = parseInt(localStorage.getItem('block-merge-high-score') || '0', 10)
+  if (mergeScore > 0) {
+    entries.push({ user_id: 'You', score: mergeScore, game_type: 'block-merge', ended_at: '' })
+  }
+  return entries
+}
+
+async function fetchLeaderboard(gameType: string, limit = 20): Promise<LeaderboardEntry[]> {
+  // Try DB first
+  if (import.meta.env.VITE_NEON_DATA_API_URL) {
+    try {
+      const client = neonClient as unknown as QueryClient
+      const { data, error } = await client
+        .from('games')
+        .select('user_id,score,game_type,ended_at')
+        .eq('status', 'game_over')
+        .eq('game_type', gameType)
+        .order('score', { ascending: false })
+        .limit(limit)
+
+      if (!error && data && data.length > 0) {
+        return data as unknown as LeaderboardEntry[]
+      }
+      if (error) console.warn('Leaderboard DB error:', error)
+    } catch (e) {
+      console.warn('Leaderboard DB failed:', e)
+    }
+  }
+
+  // Fallback to localStorage high scores
+  return getLocalScores().filter(e => e.game_type === gameType)
 }
 
 type LeaderboardProps = {
