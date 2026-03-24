@@ -56,29 +56,61 @@ export function findMergeGroup(board: Board, origin: Cell): Cell[] {
  * place value*2 at origin. Repeat at origin with new value (chain reaction).
  * Loop until no more merges or value exceeds 1024.
  */
+/**
+ * Find the best merge group on the board. Scans all cells, returns the
+ * largest group found (preferring the origin cell if it has a group).
+ */
+function findBestMerge(board: Board, preferOrigin?: Cell): { origin: Cell; group: Cell[] } | null {
+  const visited = new Set<string>()
+  let best: { origin: Cell; group: Cell[] } | null = null
+
+  // Check preferred origin first
+  if (preferOrigin && board[preferOrigin.row]?.[preferOrigin.col] !== null) {
+    const group = findMergeGroup(board, preferOrigin)
+    if (group.length >= 2) return { origin: preferOrigin, group }
+  }
+
+  // Scan entire board for any merge opportunity
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      const key = `${r},${c}`
+      if (visited.has(key) || board[r][c] === null) continue
+      const group = findMergeGroup(board, { row: r, col: c })
+      if (group.length >= 2) {
+        for (const cell of group) visited.add(`${cell.row},${cell.col}`)
+        if (!best || group.length > best.group.length) {
+          best = { origin: { row: r, col: c }, group }
+        }
+      }
+    }
+  }
+
+  return best
+}
+
 export function resolveChains(
   board: Board,
   initialOrigin: Cell
 ): { board: Board; merges: MergeResult[] } {
   let currentBoard = board.map(row => [...row])
-  let origin = { ...initialOrigin }
   const merges: MergeResult[] = []
   let chainDepth = 0
+  let preferOrigin: Cell | undefined = { ...initialOrigin }
+  const MAX_CHAINS = 20
 
-  while (true) {
-    const group = findMergeGroup(currentBoard, origin)
-    if (group.length < 2) break
+  while (chainDepth < MAX_CHAINS) {
+    const found = findBestMerge(currentBoard, preferOrigin)
+    if (!found) break
 
+    const { origin, group } = found
     const currentValue = currentBoard[origin.row][origin.col] as MergeValue
     const valueIndex = MERGE_VALUES.indexOf(currentValue)
     if (valueIndex === -1 || valueIndex >= MERGE_VALUES.length - 1) break
 
-    // Group size determines levels gained: 2 cells = +1, 3 cells = +2, etc.
     const levelsUp = Math.min(group.length - 1, MERGE_VALUES.length - 1 - valueIndex)
     if (levelsUp < 1) break
     const nextValue = MERGE_VALUES[valueIndex + levelsUp]
 
-    // Record which cells were merged (all except the result cell)
     const mergedCells = group.filter(
       c => !(c.row === origin.row && c.col === origin.col)
     )
@@ -91,18 +123,17 @@ export function resolveChains(
       chainDepth,
     })
 
-    // Apply the merge: clear all group cells, place new value at origin
+    // Apply the merge
     let nextBoard = currentBoard.map(row => [...row])
     for (const cell of group) {
       nextBoard[cell.row][cell.col] = null
     }
     nextBoard[origin.row][origin.col] = nextValue
 
-    // Apply gravity — blocks fall down
+    // Apply gravity
     nextBoard = applyGravity(nextBoard)
 
-    // Find where the merged result ended up after gravity
-    // It may have fallen from origin.row to a lower row
+    // Track where the result ended up after gravity
     let newOriginRow = origin.row
     for (let r = BOARD_SIZE - 1; r >= 0; r--) {
       if (nextBoard[r][origin.col] === nextValue) {
@@ -110,7 +141,7 @@ export function resolveChains(
         break
       }
     }
-    origin = { row: newOriginRow, col: origin.col }
+    preferOrigin = { row: newOriginRow, col: origin.col }
 
     currentBoard = nextBoard
     chainDepth++
