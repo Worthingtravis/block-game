@@ -1,11 +1,12 @@
 export const BOARD_SIZE = 5
-export const MERGE_VALUES = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024] as const
+export const MERGE_VALUES = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192] as const
 export type MergeValue = (typeof MERGE_VALUES)[number]
 
 export const VALUE_COLORS: Record<MergeValue, string> = {
   2: '#4a90d9', 4: '#2bbcb3', 8: '#4caf50', 16: '#8bc34a',
   32: '#ffdd44', 64: '#ff9800', 128: '#f44336', 256: '#e91e90',
   512: '#9c27b0', 1024: '#5c6bc0',
+  2048: '#d4af37', 4096: '#ff4081', 8192: '#00e5ff',
 }
 
 export type Cell = { row: number; col: number }

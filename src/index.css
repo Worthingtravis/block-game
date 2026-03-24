@@ -973,9 +973,15 @@ html, body, #root {
 
 .merge-cell[data-value="128"],
 .merge-cell[data-value="256"],
-.merge-cell[data-value="512"],
-.merge-cell[data-value="1024"] {
+.merge-cell[data-value="512"] {
   font-size: 1rem;
+}
+
+.merge-cell[data-value="1024"],
+.merge-cell[data-value="2048"],
+.merge-cell[data-value="4096"],
+.merge-cell[data-value="8192"] {
+  font-size: 0.8rem;
 }
 
 @keyframes mergePop {
