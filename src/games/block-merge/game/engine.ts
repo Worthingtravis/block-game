@@ -35,8 +35,15 @@ export function findMergeGroup(board: Board, origin: Cell): Cell[] {
   return group.length >= 2 ? group : []
 }
 
-/** Find the first merge opportunity on the board (bottom-up, left-to-right). */
-export function findAnyMerge(board: Board): { origin: Cell; group: Cell[] } | null {
+/** Find a merge on the board, preferring the given cell as the merge target. */
+export function findAnyMerge(board: Board, prefer?: Cell): { origin: Cell; group: Cell[] } | null {
+  // Check preferred cell first (where the new block landed)
+  if (prefer && board[prefer.row]?.[prefer.col] !== null) {
+    const group = findMergeGroup(board, prefer)
+    if (group.length >= 2) return { origin: prefer, group }
+  }
+
+  // Scan entire board bottom-up
   const checked = new Set<string>()
   for (let r = BOARD_SIZE - 1; r >= 0; r--) {
     for (let c = 0; c < BOARD_SIZE; c++) {
@@ -44,7 +51,6 @@ export function findAnyMerge(board: Board): { origin: Cell; group: Cell[] } | nu
       if (checked.has(key) || board[r][c] === null) continue
       const group = findMergeGroup(board, { row: r, col: c })
       if (group.length >= 2) {
-        // Pick the bottom-most cell as origin (gravity-friendly)
         const origin = group.reduce((a, b) => a.row > b.row ? a : b)
         return { origin, group }
       }

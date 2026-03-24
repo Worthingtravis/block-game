@@ -7,11 +7,11 @@ type MergeBoardProps = {
   onCellClick: (col: number) => void
   phase: Phase
   currentMerge?: MergeResult | null
-  dropCol?: number | null
+  dropCell?: { row: number; col: number } | null
   disabled?: boolean
 }
 
-export default function MergeBoard({ board, onCellClick, phase, currentMerge, dropCol, disabled }: MergeBoardProps) {
+export default function MergeBoard({ board, onCellClick, phase, currentMerge, dropCell, disabled }: MergeBoardProps) {
   return (
     <div className="merge-board">
       {Array.from({ length: BOARD_SIZE * BOARD_SIZE }, (_, i) => {
@@ -22,8 +22,8 @@ export default function MergeBoard({ board, onCellClick, phase, currentMerge, dr
         const isMergeResult = phase === 'merging' && currentMerge &&
           currentMerge.resultCell.row === row && currentMerge.resultCell.col === col
 
-        const isDropping = phase === 'dropping' && dropCol === col &&
-          value !== null && (row === 0 || board[row - 1]?.[col] === null)
+        const isDropping = phase === 'dropping' && dropCell &&
+          dropCell.row === row && dropCell.col === col
 
         return (
           <MergeCell

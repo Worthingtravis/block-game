@@ -17,7 +17,7 @@ function buildGameState(overrides: Partial<GameState> = {}): GameState {
     gameOver: false,
     phase: 'idle',
     currentMerge: null,
-    dropCol: null,
+    dropCell: null,
     ...overrides,
   }
 }
@@ -57,7 +57,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         queue: nextQueue,
         phase: 'dropping',
         currentMerge: null,
-        dropCol: col,
+        dropCell: { row, col },
       }
     }
 
@@ -65,8 +65,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (state.phase === 'idle') return state
 
       if (state.phase === 'dropping') {
-        // After drop animation, check for merges
-        const found = findAnyMerge(state.board)
+        // After drop animation, check for merges — prefer the drop cell as merge target
+        const found = findAnyMerge(state.board, state.dropCell ?? undefined)
         if (found) {
           const { board, merge } = applyMerge(state.board, found.origin, found.group)
           let highestTile = state.highestTile
@@ -84,13 +84,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             totalMerges: state.totalMerges + 1,
             phase: 'merging',
             currentMerge: merge,
-            dropCol: null,
+            dropCell: null,
           }
         }
         // No merge — settle
         const gameOver = checkGameOver(state.board)
         if (gameOver) clearGame()
-        return { ...state, phase: 'idle', currentMerge: null, dropCol: null, gameOver }
+        return { ...state, phase: 'idle', currentMerge: null, dropCell: null, gameOver }
       }
 
       if (state.phase === 'merging') {

@@ -32,8 +32,8 @@ export type GameState = {
   phase: Phase
   /** The merge that just happened (for animation/audio) */
   currentMerge: MergeResult | null
-  /** Column where last block was dropped */
-  dropCol: number | null
+  /** Where the last block landed */
+  dropCell: Cell | null
 }
 
 export type GameAction =

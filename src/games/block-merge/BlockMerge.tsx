@@ -90,7 +90,7 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
           onCellClick={placeBlock}
           phase={state.phase}
           currentMerge={state.currentMerge}
-          dropCol={state.dropCol}
+          dropCell={state.dropCell}
           disabled={state.gameOver}
         />
         <ParticleCanvas ref={particleRef} width={boardSize.width} height={boardSize.height} />
