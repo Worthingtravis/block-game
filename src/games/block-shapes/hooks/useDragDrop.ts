@@ -82,7 +82,6 @@ export function useDragDrop({ board, onDrop, boardRef }: UseDragDropOptions) {
     dragPieceRef.current = piece
     dragPieceIndexRef.current = index
     pieceMetricsRef.current = computePieceMetrics(piece)
-    // Cache board padding once at drag start
     const boardEl = boardRef.current
     if (boardEl) {
       boardPaddingRef.current = parseFloat(getComputedStyle(boardEl).padding) || 6
