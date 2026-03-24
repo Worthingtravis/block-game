@@ -1,4 +1,4 @@
-import { useReducer, useCallback, useEffect, useRef } from 'react'
+import { useReducer, useCallback, useEffect, useRef, useState } from 'react'
 import type { GameState, GameAction, Cell } from '../game/types'
 import { createEmptyBoard, isValidPlacement, stampPiece, findClears, applyClear, applyBomb, canAnyPieceFit } from '../game/engine'
 import { calculatePlacementScore, calculateClearScore, updateCombo } from '../game/scoring'
@@ -144,15 +144,14 @@ function createInitialState(): { state: GameState; game: StoredGame } {
   return { state, game: createStoredGame(state.pieces) }
 }
 
-const _initial = createInitialState()
-
 type UseGameStateOptions = {
   syncService?: GameSyncService | null
 }
 
 export function useGameState(opts?: UseGameStateOptions) {
-  const [state, dispatch] = useReducer(gameReducer, _initial.state)
-  const gameRef = useRef<StoredGame>(_initial.game)
+  const [initial] = useState(createInitialState)
+  const [state, dispatch] = useReducer(gameReducer, initial.state)
+  const gameRef = useRef<StoredGame>(initial.game)
   const lastFlushedRef = useRef(0)
   const syncRef = useRef(opts?.syncService ?? null)
   useEffect(() => { syncRef.current = opts?.syncService ?? null }, [opts?.syncService])
