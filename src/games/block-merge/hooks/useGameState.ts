@@ -1,6 +1,7 @@
 import { useReducer, useCallback, useEffect, useState, useRef } from 'react'
 import type { GameState, GameAction, Board } from '../game/types'
 import { createEmptyBoard, dropBlock, findAnyMerge, applyMerge, applyGravity, checkGameOver, generateNextValue } from '../game/engine'
+import { calculateMergePoints, calculateChainBonus } from '../game/scoring'
 import { saveGame, loadGame, clearGame, loadHighScore, saveHighScore } from '../persistence'
 
 const STEP_INTERVAL = 350
@@ -16,6 +17,7 @@ function buildGameState(overrides: Partial<GameState> = {}): GameState {
     gameOver: false,
     phase: 'idle',
     currentMerge: null,
+    chainStep: 0,
     dropCell: null,
     ...overrides,
   }
@@ -36,10 +38,12 @@ function tryMerge(state: GameState, board: Board, prefer?: { row: number; col: n
   const highestTile = merge.resultValue > state.highestTile
     ? merge.resultValue
     : state.highestTile
-  // Exponential bonus for multi-merges: value × groupSize × 2^(groupSize-2)
+
   const groupSize = found.group.length
-  const multiBonus = Math.pow(2, Math.max(0, groupSize - 2))
-  const score = state.score + merge.sourceValue * groupSize * multiBonus
+  const points = calculateMergePoints(merge.sourceValue, groupSize)
+  const chainBonus = calculateChainBonus(state.chainStep)
+  const score = state.score + points * chainBonus
+
   const highScore = score > state.highScore
     ? (saveHighScore(score), score)
     : state.highScore
@@ -53,6 +57,7 @@ function tryMerge(state: GameState, board: Board, prefer?: { row: number; col: n
     totalMerges: state.totalMerges + 1,
     phase: 'merging',
     currentMerge: merge,
+    chainStep: state.chainStep + 1,
     dropCell: null,
   }
 }
@@ -61,7 +66,8 @@ function tryMerge(state: GameState, board: Board, prefer?: { row: number; col: n
 function settle(state: GameState): GameState {
   const gameOver = checkGameOver(state.board)
   if (gameOver) clearGame()
-  return { ...state, phase: 'idle', currentMerge: null, dropCell: null, gameOver }
+
+  return { ...state, phase: 'idle', currentMerge: null, chainStep: 0, dropCell: null, gameOver }
 }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
@@ -86,6 +92,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         queue: nextQueue,
         phase: 'dropping',
         currentMerge: null,
+        chainStep: 0,
         dropCell: { row, col },
       }
     }

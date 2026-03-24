@@ -22,6 +22,7 @@ export type GameState = {
   gameOver: boolean
   phase: Phase
   currentMerge: MergeResult | null
+  chainStep: number
   dropCell: Cell | null
 }
 
