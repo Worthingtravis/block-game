@@ -13,7 +13,6 @@ const MESSAGES = {
 // Special messages for unique situations
 const SPECIALS = {
   crossClear: ['CROSSFIRE!', 'Cross clear!', 'X marks the spot!'],
-  fullBoard: ['BOARD WIPE!', 'Total destruction!', 'Nothing left!'],
   comboMilestones: {
     5: ['FIVE ALIVE!', 'Penta-streak!', 'CAN\'T BE STOPPED!'],
     7: ['SEVEN HEAVEN!', 'Lucky seven!', 'WHAT A RUN!'],

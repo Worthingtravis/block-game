@@ -25,7 +25,6 @@ const SPECIALS = {
   } as Record<number, string[]>,
   fiveGroup: ['FIVE-WAY MERGE!', 'PENTA MERGE!', 'The whole squad!'],
   fourGroup: ['QUAD MERGE!', 'Four of a kind!', 'Squad goals!'],
-  gravityChain: ['Gravity does the work!', 'Let it fall!', 'The dominos fall!'],
 }
 
 function pickMessage(merge: MergeResult, chainStep: number, totalMerges: number): string {
