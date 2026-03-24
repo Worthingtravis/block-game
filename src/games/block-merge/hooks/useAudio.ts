@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import type { GameState } from '../game/types'
 import { initAudio, playMerge, playChainReaction, playGameOver, playDrop, playNewTileUnlocked } from '../audio/sounds'
-import { getChainStepDelay, SLIDE_DURATION } from './useMergeAnimation'
+import { getChainStepDelay, SLIDE_DURATION, DROP_DURATION } from './useMergeAnimation'
 
 export function useAudio(state: GameState): void {
   const [prevGameOver, setPrevGameOver] = useState(state.gameOver)
@@ -26,9 +26,14 @@ export function useAudio(state: GameState): void {
     for (const t of timersRef.current) clearTimeout(t)
     timersRef.current = []
 
+    // Drop sound synced to landing moment
+    if (!state.gameOver) {
+      const dropT = setTimeout(() => playDrop(), DROP_DURATION * 0.7)
+      timersRef.current.push(dropT)
+    }
+
     if (state.lastMerges && state.lastMerges.length > 0) {
-      // Stagger merge sounds so they align with the visual chain steps.
-      // Each chain step's audio fires when its slide finishes (at pop time).
+      // Merge sounds synced to each chain step's pop moment
       for (const merge of state.lastMerges) {
         const delay = getChainStepDelay(merge.chainDepth) + SLIDE_DURATION
         const t = setTimeout(() => {
@@ -37,8 +42,6 @@ export function useAudio(state: GameState): void {
         }, delay)
         timersRef.current.push(t)
       }
-    } else if (!state.gameOver) {
-      playDrop()
     }
   }
 
