@@ -27,6 +27,8 @@ type BlockShapesProps = {
   syncService?: GameSyncService | null
 }
 
+const FINGER_OFFSET = 50
+
 export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
   const { state, placePiece, useBomb, newGame } = useGameState({ syncService })
   const { settings, update: updateSettings } = useSettings()
@@ -34,10 +36,14 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
   const particleRef = useRef<ParticleCanvasHandle>(null)
   const [boardSize, setBoardSize] = useState({ width: 400, height: 400 })
   const [optionsOpen, setOptionsOpen] = useState(false)
-  const [bombMode, setBombMode] = useState(false)
   const [reviewing, setReviewing] = useState(false)
   const [replayGame, setReplayGame] = useState<import('./persistence').StoredGame | null>(null)
   const maxComboRef = useRef(1)
+
+  // Bomb drag state
+  const [bombDragging, setBombDragging] = useState(false)
+  const [bombDragPos, setBombDragPos] = useState<{ x: number; y: number } | null>(null)
+  const [bombHoverCell, setBombHoverCell] = useState<{ row: number; col: number } | null>(null)
 
   if (state.comboMultiplier > maxComboRef.current) maxComboRef.current = state.comboMultiplier
   if (state.score === 0) maxComboRef.current = 1
@@ -62,10 +68,10 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
     })
 
   const handleDragStart = useCallback((index: number, piece: Piece, clientX: number, clientY: number) => {
-    if (bombMode) return
+    if (bombDragging) return
     playPickUp()
     rawDragStart(index, piece, clientX, clientY)
-  }, [rawDragStart, bombMode])
+  }, [rawDragStart, bombDragging])
 
   const handlePointerUp = useCallback(() => {
     if (dragState.draggedPieceIndex !== null && dragState.hoverPosition && dragState.placementValidity === false) {
@@ -74,6 +80,7 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
     rawPointerUp()
   }, [rawPointerUp, dragState.draggedPieceIndex, dragState.hoverPosition, dragState.placementValidity])
 
+  // Piece drag listeners
   useEffect(() => {
     const onMove = (e: PointerEvent) => handlePointerMove(e)
     const onUp = () => handlePointerUp()
@@ -87,6 +94,7 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
     }
   }, [handlePointerMove, handlePointerUp])
 
+  // Board resize observer
   useEffect(() => {
     const el = boardRef.current
     if (!el) return
@@ -99,6 +107,57 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
     return () => observer.disconnect()
   }, [])
 
+  // Bomb drag helpers
+  const getBombCell = useCallback((clientX: number, clientY: number) => {
+    const el = boardRef.current
+    if (!el) return null
+    const rect = el.getBoundingClientRect()
+    const padding = parseFloat(getComputedStyle(el).padding) || 6
+    const innerW = rect.width - padding * 2
+    const innerH = rect.height - padding * 2
+    const col = Math.floor(((clientX - rect.left - padding) / innerW) * BOARD_SIZE)
+    const row = Math.floor(((clientY - rect.top - padding - FINGER_OFFSET) / innerH) * BOARD_SIZE)
+    if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) return null
+    return { row, col }
+  }, [])
+
+  const handleBombPointerDown = useCallback((e: React.PointerEvent) => {
+    if (state.bombs <= 0) return
+    e.preventDefault()
+    e.currentTarget.setPointerCapture(e.pointerId)
+    setBombDragging(true)
+    setBombDragPos({ x: e.clientX, y: e.clientY - FINGER_OFFSET })
+    setBombHoverCell(getBombCell(e.clientX, e.clientY))
+  }, [state.bombs, getBombCell])
+
+  // Bomb drag move/up listeners
+  useEffect(() => {
+    if (!bombDragging) return
+    const onMove = (e: PointerEvent) => {
+      setBombDragPos({ x: e.clientX, y: e.clientY - FINGER_OFFSET })
+      setBombHoverCell(getBombCell(e.clientX, e.clientY))
+    }
+    const onUp = () => {
+      if (bombHoverCell) {
+        playBombExplode()
+        vibratePlace()
+        useBomb(bombHoverCell)
+      }
+      setBombDragging(false)
+      setBombDragPos(null)
+      setBombHoverCell(null)
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onUp)
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
+    }
+  }, [bombDragging, bombHoverCell, getBombCell, useBomb])
+
+  // Piece preview cells
   const previewCells = useMemo(() => {
     if (!dragState.hoverPosition || !draggedPiece) return undefined
     return draggedPiece.cells.map(c => ({
@@ -107,33 +166,21 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
     }))
   }, [dragState.hoverPosition, draggedPiece])
 
+  // Bomb cross-hair preview: full row + column
+  const bombPreviewCells = useMemo(() => {
+    if (!bombHoverCell) return undefined
+    const cells: { row: number; col: number }[] = []
+    for (let c = 0; c < BOARD_SIZE; c++) cells.push({ row: bombHoverCell.row, col: c })
+    for (let r = 0; r < BOARD_SIZE; r++) {
+      if (r !== bombHoverCell.row) cells.push({ row: r, col: bombHoverCell.col })
+    }
+    return cells
+  }, [bombHoverCell])
+
   const handleRestart = useCallback(() => {
     setOptionsOpen(false)
-    setBombMode(false)
     newGame()
   }, [newGame])
-
-  const handleBoardClick = useCallback((e: React.PointerEvent) => {
-    if (!bombMode || state.bombs <= 0) return
-    const el = boardRef.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    const padding = parseFloat(getComputedStyle(el).padding) || 6
-    const innerW = rect.width - padding * 2
-    const innerH = rect.height - padding * 2
-    const col = Math.floor(((e.clientX - rect.left - padding) / innerW) * BOARD_SIZE)
-    const row = Math.floor(((e.clientY - rect.top - padding) / innerH) * BOARD_SIZE)
-    if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) return
-    playBombExplode()
-    vibratePlace()
-    useBomb({ row, col })
-    setBombMode(false)
-  }, [bombMode, state.bombs, useBomb])
-
-  // Cancel bomb mode if bombs run out
-  useEffect(() => {
-    if (state.bombs <= 0) setBombMode(false)
-  }, [state.bombs])
 
   return (
     <div className="game-container">
@@ -162,16 +209,14 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
 
       <div
         ref={boardRef}
-        className={`board-wrapper${shaking ? ' board--shaking' : ''}${bombMode ? ' board--bomb-mode' : ''}`}
-        onPointerDown={bombMode ? handleBoardClick : undefined}
+        className={`board-wrapper${shaking ? ' board--shaking' : ''}`}
       >
         <Board
           board={state.board}
-          previewCells={previewCells}
-          previewColor={draggedPiece?.color}
-          previewValid={dragState.placementValidity}
+          previewCells={bombDragging ? bombPreviewCells : previewCells}
+          previewColor={bombDragging ? 'red' : draggedPiece?.color}
+          previewValid={bombDragging ? (bombHoverCell ? true : null) : dragState.placementValidity}
           clearingCells={clearingCells.length > 0 ? clearingCells : undefined}
-          bombMode={bombMode}
         />
         <ParticleCanvas ref={particleRef} width={boardSize.width} height={boardSize.height} />
         <Affirmations lastClear={state.lastClear} comboMultiplier={state.comboMultiplier} />
@@ -183,23 +228,34 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
           onDragStart={handleDragStart}
         />
         {state.bombs > 0 && (
-          <button
-            className={`bomb-btn${bombMode ? ' bomb-btn--active' : ''}`}
-            onClick={() => setBombMode(prev => !prev)}
-            aria-label={`Use bomb (${state.bombs} available)`}
+          <div
+            className={`bomb-btn${bombDragging ? ' bomb-btn--active' : ''}`}
+            onPointerDown={handleBombPointerDown}
+            style={{ touchAction: 'none' }}
           >
             <span className="bomb-btn__icon">💣</span>
             <span className="bomb-btn__count">{state.bombs}</span>
-          </button>
+          </div>
         )}
       </div>
 
+      {/* Piece drag ghost */}
       {dragPosition && draggedPiece && (
         <div
           className="drag-ghost"
           style={{ left: dragPosition.x, top: dragPosition.y }}
         >
           <PiecePreview piece={draggedPiece} />
+        </div>
+      )}
+
+      {/* Bomb drag ghost */}
+      {bombDragPos && (
+        <div
+          className="drag-ghost bomb-ghost"
+          style={{ left: bombDragPos.x, top: bombDragPos.y }}
+        >
+          💣
         </div>
       )}
 

@@ -737,12 +737,9 @@ html, body, #root {
   color: var(--text-secondary);
 }
 
-.board--bomb-mode {
-  cursor: crosshair;
-}
-
-.board--bomb-target {
-  cursor: crosshair;
+.bomb-ghost {
+  font-size: 2rem;
+  opacity: 0.9;
 }
 
 @keyframes bombPulse {

@@ -8,10 +8,9 @@ type BoardProps = {
   previewColor?: BlockColor | null
   previewValid?: boolean | null
   clearingCells?: CellType[]
-  bombMode?: boolean
 }
 
-export default function Board({ board, previewCells, previewColor, previewValid, clearingCells, bombMode }: BoardProps) {
+export default function Board({ board, previewCells, previewColor, previewValid, clearingCells }: BoardProps) {
   const previewSet = useMemo(() => {
     if (!previewCells) return new Set<string>()
     return new Set(previewCells.map(c => `${c.row},${c.col}`))
@@ -23,7 +22,7 @@ export default function Board({ board, previewCells, previewColor, previewValid,
   }, [clearingCells])
 
   return (
-    <div className={`board${bombMode ? ' board--bomb-target' : ''}`}>
+    <div className="board">
       {board.flatMap((row, r) =>
         row.map((cell, c) => {
           const isPreview = previewSet.has(`${r},${c}`) && previewValid !== null
