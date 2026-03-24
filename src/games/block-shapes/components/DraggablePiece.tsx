@@ -4,7 +4,7 @@ import PiecePreview from './PiecePreview'
 type DraggablePieceProps = {
   piece: Piece | null
   index: number
-  onDragStart: (index: number, piece: Piece) => void
+  onDragStart: (index: number, piece: Piece, clientX: number, clientY: number) => void
   cellSize?: number
 }
 
@@ -15,7 +15,8 @@ export default function DraggablePiece({ piece, index, onDragStart, cellSize = 2
 
   const handlePointerDown = (e: React.PointerEvent) => {
     e.preventDefault()
-    onDragStart(index, piece)
+    e.currentTarget.setPointerCapture(e.pointerId)
+    onDragStart(index, piece, e.clientX, e.clientY)
   }
 
   return (

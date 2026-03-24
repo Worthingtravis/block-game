@@ -3,7 +3,6 @@ import type { Cell, DragState, Piece, Board } from '../game/types'
 import { BOARD_SIZE } from '../game/types'
 import { isValidPlacement } from '../game/engine'
 
-const DRAG_THRESHOLD = 8
 const FINGER_OFFSET = 50
 
 type UseDragDropOptions = {
@@ -43,8 +42,6 @@ export function useDragDrop({ board, onDrop, boardRef }: UseDragDropOptions) {
 
   const dragPieceRef = useRef<Piece | null>(null)
   const dragPieceIndexRef = useRef<number | null>(null)
-  const startPosRef = useRef<{ x: number; y: number } | null>(null)
-  const isDraggingRef = useRef(false)
   const pieceMetricsRef = useRef<PieceMetrics | null>(null)
   const boardPaddingRef = useRef(6)
 
@@ -81,11 +78,9 @@ export function useDragDrop({ board, onDrop, boardRef }: UseDragDropOptions) {
     return { row, col }
   }, [boardRef])
 
-  const handleDragStart = useCallback((index: number, piece: Piece) => {
+  const handleDragStart = useCallback((index: number, piece: Piece, clientX: number, clientY: number) => {
     dragPieceRef.current = piece
     dragPieceIndexRef.current = index
-    startPosRef.current = null
-    isDraggingRef.current = false
     pieceMetricsRef.current = computePieceMetrics(piece)
     // Cache board padding once at drag start
     const boardEl = boardRef.current
@@ -93,6 +88,7 @@ export function useDragDrop({ board, onDrop, boardRef }: UseDragDropOptions) {
       boardPaddingRef.current = parseFloat(getComputedStyle(boardEl).padding) || 6
     }
     setDraggedPiece(piece)
+    setDragPosition({ x: clientX, y: clientY - FINGER_OFFSET })
     setDragState({
       draggedPieceIndex: index,
       hoverPosition: null,
@@ -102,17 +98,6 @@ export function useDragDrop({ board, onDrop, boardRef }: UseDragDropOptions) {
 
   const handlePointerMove = useCallback((e: PointerEvent) => {
     if (dragPieceIndexRef.current === null) return
-
-    if (!isDraggingRef.current) {
-      if (!startPosRef.current) {
-        startPosRef.current = { x: e.clientX, y: e.clientY }
-        return
-      }
-      const dx = e.clientX - startPosRef.current.x
-      const dy = e.clientY - startPosRef.current.y
-      if (Math.sqrt(dx * dx + dy * dy) < DRAG_THRESHOLD) return
-      isDraggingRef.current = true
-    }
 
     setDragPosition({ x: e.clientX, y: e.clientY - FINGER_OFFSET })
 
@@ -142,8 +127,6 @@ export function useDragDrop({ board, onDrop, boardRef }: UseDragDropOptions) {
     }
     dragPieceRef.current = null
     dragPieceIndexRef.current = null
-    startPosRef.current = null
-    isDraggingRef.current = false
     pieceMetricsRef.current = null
     setDragPosition(null)
     setDraggedPiece(null)

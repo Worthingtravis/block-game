@@ -394,7 +394,8 @@ html, body, #root {
   transform: translate(-50%, -50%) scale(1.1);
   pointer-events: none;
   z-index: 50;
-  opacity: 0.8;
+  opacity: 0.85;
+  will-change: left, top;
 }
 
 /* ===== Options button ===== */

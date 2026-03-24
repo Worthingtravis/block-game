@@ -50,9 +50,9 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
       boardRef,
     })
 
-  const handleDragStart = useCallback((index: number, piece: Piece) => {
+  const handleDragStart = useCallback((index: number, piece: Piece, clientX: number, clientY: number) => {
     playPickUp()
-    rawDragStart(index, piece)
+    rawDragStart(index, piece, clientX, clientY)
   }, [rawDragStart])
 
   const handlePointerUp = useCallback(() => {
