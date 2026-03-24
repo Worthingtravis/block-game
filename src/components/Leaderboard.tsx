@@ -8,31 +8,36 @@ type LeaderboardEntry = {
   ended_at: string
 }
 
-type QueryClient = {
-  from: (table: string) => {
-    select: (columns?: string) => {
-      eq: (col: string, val: unknown) => {
-        order: (col: string, opts?: { ascending: boolean }) => {
-          limit: (n: number) => Promise<{ data: Record<string, unknown>[]; error: unknown }>
+async function fetchLeaderboard(gameType: string, limit = 20): Promise<LeaderboardEntry[]> {
+  try {
+    const client = neonClient as unknown as {
+      from: (table: string) => {
+        select: (columns?: string) => {
+          eq: (col: string, val: unknown) => {
+            eq: (col: string, val: unknown) => {
+              order: (col: string, opts?: { ascending: boolean }) => {
+                limit: (n: number) => Promise<{ data: Record<string, unknown>[]; error: unknown }>
+              }
+            }
+          }
         }
       }
     }
-  }
-}
-
-async function fetchLeaderboard(gameType: string, limit = 20): Promise<LeaderboardEntry[]> {
-  try {
-    const client = neonClient as unknown as QueryClient
     const { data, error } = await client
       .from('games')
       .select('user_id,score,game_type,ended_at')
       .eq('status', 'game_over')
+      .eq('game_type', gameType)
       .order('score', { ascending: false })
       .limit(limit)
 
-    if (error || !data) return []
-    return (data as unknown as LeaderboardEntry[]).filter(e => e.game_type === gameType)
-  } catch {
+    if (error || !data) {
+      console.warn('Leaderboard fetch error:', error)
+      return []
+    }
+    return data as unknown as LeaderboardEntry[]
+  } catch (e) {
+    console.warn('Leaderboard fetch failed:', e)
     return []
   }
 }
@@ -89,7 +94,7 @@ export default function Leaderboard({ onBack }: LeaderboardProps) {
       ) : (
         <div className="leaderboard__list">
           {entries.map((entry, i) => (
-            <div key={`${entry.user_id}-${entry.ended_at}`} className={`leaderboard__row${i < 3 ? ` leaderboard__row--top${i + 1}` : ''}`}>
+            <div key={`${entry.user_id}-${entry.ended_at}-${i}`} className={`leaderboard__row${i < 3 ? ` leaderboard__row--top${i + 1}` : ''}`}>
               <span className="leaderboard__rank">
                 {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
               </span>
