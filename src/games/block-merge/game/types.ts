@@ -28,7 +28,6 @@ export type DropInfo = {
 
 export type GameState = {
   board: Board
-  preBoard: Board | null
   queue: [MergeValue, MergeValue, MergeValue]
   score: number
   highScore: number

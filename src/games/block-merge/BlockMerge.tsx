@@ -27,9 +27,7 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
 
   useAudio(state)
 
-  const { displayBoard, phase, dropping, poppingSet } = useMergeAnimation(
-    state.board,
-    state.preBoard,
+  const { phase, dropping, poppingSet } = useMergeAnimation(
     state.lastMerges,
     state.lastDrop,
   )
@@ -115,7 +113,7 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
 
       <div ref={boardRef} className="board-wrapper">
         <MergeBoard
-          board={displayBoard}
+          board={state.board}
           onCellClick={placeBlock}
           lastDrop={state.lastDrop}
           dropping={dropping}

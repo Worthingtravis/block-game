@@ -8,7 +8,6 @@ import { saveGame, loadGame, clearGame, loadHighScore, saveHighScore } from '../
 function buildGameState(overrides: Partial<GameState> = {}): GameState {
   return {
     board: createEmptyBoard(),
-    preBoard: null,
     queue: [generateNextValue(0), generateNextValue(0), generateNextValue(0)],
     score: 0,
     highScore: loadHighScore(),
@@ -49,9 +48,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       newBoard[dropRow][col] = currentValue
       const dropPosition = { row: dropRow, col }
 
-      // Snapshot the board after drop but before merges resolve
-      const preMergeBoard = newBoard.map(r => [...r])
-
       const { board: resolvedBoard, merges } = resolveChains(newBoard, dropPosition)
 
       const mergeScore = calculateMergeScore(merges)
@@ -79,7 +75,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       return {
         board: resolvedBoard,
-        preBoard: merges.length > 0 ? preMergeBoard : null,
         queue: nextQueue,
         score,
         highScore,
@@ -98,7 +93,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'LOAD_STATE': {
-      return { ...action.state, preBoard: null, highScore: Math.max(state.highScore, action.state.score) }
+      return { ...action.state, highScore: Math.max(state.highScore, action.state.score) }
     }
 
     default:
