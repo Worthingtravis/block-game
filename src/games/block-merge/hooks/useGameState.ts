@@ -68,7 +68,7 @@ function settle(state: GameState): GameState {
   const gameOver = checkGameOver(state.board)
   if (gameOver) clearGame()
 
-  return { ...state, phase: 'idle', currentMerge: null, chainStep: 0, dropCell: null, gameOver }
+  return { ...state, phase: 'idle', currentMerge: null, dropCell: null, gameOver }
 }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {

@@ -71,7 +71,7 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
         <ScoreDisplay
           score={state.score}
           highScore={state.highScore}
-          comboMultiplier={state.chainStep > 0 ? state.chainStep + 1 : 1}
+          comboMultiplier={state.chainStep > 0 ? state.chainStep : 1}
         />
         <button
           className="options-btn"
