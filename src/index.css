@@ -842,18 +842,20 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 0;
+  gap: 12px;
+  padding: 24px 0;
+  width: 100%;
+  max-width: 400px;
 }
 
 .replay-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--surface);
   color: var(--text);
   cursor: pointer;
@@ -871,8 +873,8 @@ html, body, #root {
 }
 
 .replay-btn--play {
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   border-color: var(--green);
 }
 
