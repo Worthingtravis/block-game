@@ -95,7 +95,7 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
           dropCell={state.dropCell}
           disabled={state.gameOver}
         />
-        <Affirmations currentMerge={state.currentMerge} chainStep={state.chainStep} phase={state.phase} />
+        <Affirmations currentMerge={state.currentMerge} chainStep={state.chainStep} totalMerges={state.totalMerges} phase={state.phase} />
         <ParticleCanvas ref={particleRef} width={boardSize.width} height={boardSize.height} />
       </div>
 
