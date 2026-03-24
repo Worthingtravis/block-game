@@ -9,8 +9,7 @@ const ROWS = [
   [16, 17, 18],
 ]
 
-// Horizontal offset for each row (in half-hex-widths from the left)
-// Widest row (5) = 0 offset, 4-cell rows offset by 0.5, 3-cell rows by 1
+// Horizontal offset for each row (in hex-widths from left edge)
 const ROW_OFFSETS = [1, 0.5, 0, 0.5, 1]
 
 type HexBoardProps = {
@@ -26,8 +25,7 @@ export default function HexBoard({ board, lastMatch, onCellClick }: HexBoardProp
     <div className="hex-board">
       {ROWS.map((row, rowIndex) =>
         row.map((cellIndex, colIndex) => {
-          const xOffset = ROW_OFFSETS[rowIndex]
-          const x = colIndex + xOffset
+          const x = colIndex + ROW_OFFSETS[rowIndex]
           const y = rowIndex
           return (
             <div
@@ -43,6 +41,7 @@ export default function HexBoard({ board, lastMatch, onCellClick }: HexBoardProp
                 stack={board[cellIndex] ?? []}
                 isMatching={matchingSet.has(cellIndex)}
                 onClick={onCellClick}
+                row={rowIndex}
               />
             </div>
           )

@@ -1444,15 +1444,18 @@ html, body, #root {
  */
 
 .hex-board {
-  --hex-w: 58px;
+  --hex-w: 56px;
   --hex-h: calc(var(--hex-w) * 1.1547);
   --hex-row-h: calc(var(--hex-h) * 0.75);
 
   position: relative;
   width: calc(6 * var(--hex-w));
-  height: calc(4 * var(--hex-row-h) + var(--hex-h) + 20px);
+  height: calc(4 * var(--hex-row-h) + var(--hex-h) + 24px);
   margin: 0 auto;
   padding: 0;
+  /* Isometric tilt — board angles away from camera */
+  transform: perspective(600px) rotateX(8deg);
+  transform-origin: center bottom;
 }
 
 /* Wrapper for absolute positioning of each cell */
@@ -1481,8 +1484,7 @@ html, body, #root {
 }
 
 .hex-cell--stacked {
-  /* Extra height for 3D stack layers peeking below */
-  height: calc(var(--hex-h) + 12px);
+  overflow: visible;
 }
 
 .hex-cell--stacked:hover {
