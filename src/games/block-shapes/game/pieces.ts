@@ -100,12 +100,30 @@ const SHAPE_COLOR_MAP: Record<ShapeType, BlockColor> = {
   S1: 'lime', S2: 'lime',
 }
 
-function randomShape(): ShapeType {
-  return ALL_SHAPES[Math.floor(Math.random() * ALL_SHAPES.length)]
+// Difficulty tiers — shapes unlock as score increases
+const SHAPE_TIERS: { minScore: number; shapes: ShapeType[] }[] = [
+  { minScore: 0,   shapes: ['single', 'line2h', 'line2v', 'line3h', 'line3v', 'square2'] },
+  { minScore: 50,  shapes: ['L1', 'L2', 'L3', 'L4'] },
+  { minScore: 150, shapes: ['T1', 'T2', 'T3', 'T4', 'line4h', 'line4v'] },
+  { minScore: 300, shapes: ['Z1', 'Z2', 'S1', 'S2', 'square3'] },
+  { minScore: 500, shapes: ['line5h', 'line5v'] },
+]
+
+function getAvailableShapes(score: number): ShapeType[] {
+  const available: ShapeType[] = []
+  for (const tier of SHAPE_TIERS) {
+    if (score >= tier.minScore) available.push(...tier.shapes)
+  }
+  return available
 }
 
-export function generatePiece(): Piece {
-  const shape = randomShape()
+function randomShape(score = 0): ShapeType {
+  const pool = score > 0 ? getAvailableShapes(score) : ALL_SHAPES
+  return pool[Math.floor(Math.random() * pool.length)]
+}
+
+export function generatePiece(score = 0): Piece {
+  const shape = randomShape(score)
   return {
     id: crypto.randomUUID(),
     shape,
@@ -114,16 +132,16 @@ export function generatePiece(): Piece {
   }
 }
 
-export function generatePieceSet(): [Piece, Piece, Piece] {
-  return [generatePiece(), generatePiece(), generatePiece()]
+export function generatePieceSet(score = 0): [Piece, Piece, Piece] {
+  return [generatePiece(score), generatePiece(score), generatePiece(score)]
 }
 
 const MAX_FAIR_ATTEMPTS = 50
 
-export function generateFairPieceSet(board: Board): [Piece, Piece, Piece] {
-  let last = generatePieceSet()
+export function generateFairPieceSet(board: Board, score = 0): [Piece, Piece, Piece] {
+  let last = generatePieceSet(score)
   for (let i = 0; i < MAX_FAIR_ATTEMPTS; i++) {
-    const candidate = i === 0 ? last : generatePieceSet()
+    const candidate = i === 0 ? last : generatePieceSet(score)
     last = candidate
     if (canAllPiecesFit(board, [...candidate])) return candidate
   }

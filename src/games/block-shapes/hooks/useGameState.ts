@@ -58,7 +58,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       pieces[pieceIndex] = null
 
       const allPlaced = pieces.every(p => p === null)
-      const nextPieces = allPlaced ? generateFairPieceSet(board) : pieces
+      const nextPieces = allPlaced ? generateFairPieceSet(board, score) : pieces
 
       let highScore = state.highScore
       if (score > highScore) {
