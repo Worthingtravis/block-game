@@ -3,7 +3,7 @@ import DraggablePiece from './DraggablePiece'
 
 type PieceQueueProps = {
   pieces: [Piece | null, Piece | null, Piece | null]
-  onDragStart: (index: number, piece: Piece) => void
+  onDragStart: (index: number, piece: Piece, clientX: number, clientY: number) => void
 }
 
 export default function PieceQueue({ pieces, onDragStart }: PieceQueueProps) {

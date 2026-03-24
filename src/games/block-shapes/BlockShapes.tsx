@@ -5,6 +5,7 @@ import PiecePreview from './components/PiecePreview'
 import ScoreDisplay from './components/ScoreDisplay'
 import GameOver from './components/GameOver'
 import ParticleCanvas from './components/ParticleCanvas'
+import Affirmations from './components/Affirmations'
 import OptionsModal from './components/OptionsModal'
 import type { ParticleCanvasHandle } from './components/ParticleCanvas'
 import type { Piece } from './game/types'
@@ -137,6 +138,7 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
           clearingCells={clearingCells.length > 0 ? clearingCells : undefined}
         />
         <ParticleCanvas ref={particleRef} width={boardSize.width} height={boardSize.height} />
+        <Affirmations lastClear={state.lastClear} comboMultiplier={state.comboMultiplier} />
       </div>
 
       <PieceQueue
