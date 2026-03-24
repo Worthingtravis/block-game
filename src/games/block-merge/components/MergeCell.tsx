@@ -1,9 +1,8 @@
 import { memo } from 'react'
-import type { MergeValue } from '../game/types'
-import { VALUE_COLORS } from '../game/types'
+import { getValueColor, formatValue } from '../game/values'
 
 type MergeCellProps = {
-  value: MergeValue | null
+  value: number | null
   merging?: boolean
   dropping?: boolean
   columnHighlight?: boolean
@@ -32,15 +31,17 @@ export default memo(function MergeCell({ value, merging, dropping, columnHighlig
     dropping && 'merge-cell--dropping',
   ].filter(Boolean).join(' ')
 
+  const formatted = formatValue(value)
+  const small = formatted.length >= 3
+
   return (
     <div
       className={classes}
-      style={{ backgroundColor: VALUE_COLORS[value] }}
+      style={{ backgroundColor: getValueColor(value), fontSize: small ? '0.85rem' : undefined }}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
-      data-value={value}
     >
-      {value}
+      {formatted}
     </div>
   )
 })

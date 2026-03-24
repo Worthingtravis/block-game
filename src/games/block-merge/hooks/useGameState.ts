@@ -1,5 +1,5 @@
 import { useReducer, useCallback, useEffect, useState, useRef } from 'react'
-import type { GameState, GameAction, MergeValue, Board } from '../game/types'
+import type { GameState, GameAction, Board } from '../game/types'
 import { createEmptyBoard, dropBlock, findAnyMerge, applyMerge, applyGravity, checkGameOver, generateNextValue } from '../game/engine'
 import { saveGame, loadGame, clearGame, loadHighScore, saveHighScore } from '../persistence'
 
@@ -34,7 +34,7 @@ function tryMerge(state: GameState, board: Board, prefer?: { row: number; col: n
 
   const { board: mergedBoard, merge } = applyMerge(board, found.origin, found.group)
   const highestTile = merge.resultValue > state.highestTile
-    ? merge.resultValue as MergeValue
+    ? merge.resultValue
     : state.highestTile
   // Exponential bonus for multi-merges: value × groupSize × 2^(groupSize-2)
   const groupSize = found.group.length
@@ -74,7 +74,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const { board, row } = dropBlock(state.board, col, value)
       if (row < 0) return state
 
-      const nextQueue: [MergeValue, MergeValue, MergeValue] = [
+      const nextQueue: [number, number, number] = [
         state.queue[1],
         state.queue[2],
         generateNextValue(state.score, board),

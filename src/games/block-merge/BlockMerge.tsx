@@ -8,7 +8,8 @@ import OptionsModal from '../block-shapes/components/OptionsModal'
 import { useSettings } from '../block-shapes/hooks/useSettings'
 import { useGameState } from './hooks/useGameState'
 import { useAudio } from './hooks/useAudio'
-import { BOARD_SIZE, VALUE_COLORS } from './game/types'
+import { BOARD_SIZE } from './game/types'
+import { getValueColor, formatValue } from './game/values'
 
 type BlockMergeProps = {
   onBack: () => void
@@ -50,7 +51,7 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
     const merge = state.currentMerge
     const x = padding + merge.resultCell.col * cellW + cellW / 2
     const y = padding + merge.resultCell.row * cellH + cellH / 2
-    const color = VALUE_COLORS[merge.resultValue] ?? '#ffffff'
+    const color = getValueColor(merge.resultValue)
     particleRef.current.emit(x, y, color, 8, 1.2)
   }, [state.phase, state.currentMerge])
 
@@ -105,7 +106,7 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
             <div className="game-over-panel__score">Score: {state.score}</div>
             <div className="game-over-panel__best">Best: {state.highScore}</div>
             <div className="game-over-panel__stats">
-              <span>Highest: {state.highestTile}</span>
+              <span>Highest: {formatValue(state.highestTile)}</span>
               <span>{state.totalMerges} merges</span>
             </div>
             <div className="game-over-panel__actions">

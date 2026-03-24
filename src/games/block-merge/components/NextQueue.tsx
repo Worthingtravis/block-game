@@ -1,8 +1,7 @@
-import type { MergeValue } from '../game/types'
-import { VALUE_COLORS } from '../game/types'
+import { getValueColor, formatValue } from '../game/values'
 
 type NextQueueProps = {
-  queue: [MergeValue, MergeValue, MergeValue]
+  queue: [number, number, number]
 }
 
 export default function NextQueue({ queue }: NextQueueProps) {
@@ -12,9 +11,9 @@ export default function NextQueue({ queue }: NextQueueProps) {
         <div
           key={i}
           className={`next-queue__tile${i === 0 ? ' next-queue__tile--current' : ''}`}
-          style={{ backgroundColor: VALUE_COLORS[value] }}
+          style={{ backgroundColor: getValueColor(value) }}
         >
-          {value}
+          {formatValue(value)}
         </div>
       ))}
     </div>

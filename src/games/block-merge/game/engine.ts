@@ -1,5 +1,5 @@
-import type { Board, Cell, MergeResult, MergeValue } from './types'
-import { BOARD_SIZE, MERGE_VALUES } from './types'
+import type { Board, Cell, MergeResult } from './types'
+import { BOARD_SIZE } from './types'
 
 export function createEmptyBoard(): Board {
   return Array.from({ length: BOARD_SIZE }, () =>
@@ -62,10 +62,10 @@ export function findAnyMerge(board: Board, prefer?: Cell): { origin: Cell; group
 
 /** Apply a single merge: consume group, place result at origin. */
 export function applyMerge(board: Board, origin: Cell, group: Cell[]): { board: Board; merge: MergeResult } {
-  const sourceValue = board[origin.row][origin.col] as MergeValue
-  const valueIndex = MERGE_VALUES.indexOf(sourceValue)
-  const levelsUp = Math.min(group.length - 1, MERGE_VALUES.length - 1 - valueIndex)
-  const resultValue = MERGE_VALUES[valueIndex + Math.max(levelsUp, 1)]
+  const sourceValue = board[origin.row][origin.col] as number
+  // Group size determines levels: 2 cells = ×2, 3 cells = ×4, 4 cells = ×8, etc.
+  const levelsUp = Math.max(group.length - 1, 1)
+  const resultValue = sourceValue * Math.pow(2, levelsUp)
 
   const newBoard = board.map(row => [...row])
   for (const cell of group) newBoard[cell.row][cell.col] = null
@@ -100,7 +100,7 @@ export function applyGravity(board: Board): { board: Board; moved: boolean } {
 }
 
 /** Drop a block into a column — returns the row it lands on, or -1 if full. */
-export function dropBlock(board: Board, col: number, value: MergeValue): { board: Board; row: number } {
+export function dropBlock(board: Board, col: number, value: number): { board: Board; row: number } {
   for (let r = BOARD_SIZE - 1; r >= 0; r--) {
     if (board[r][col] === null) {
       const newBoard = board.map(row => [...row])
@@ -125,7 +125,7 @@ export function checkGameOver(board: Board): boolean {
 }
 
 /** Check if a value exists anywhere on the board. */
-function boardHasValue(board: Board, value: MergeValue): boolean {
+function boardHasValue(board: Board, value: number): boolean {
   for (let r = 0; r < BOARD_SIZE; r++) {
     for (let c = 0; c < BOARD_SIZE; c++) {
       if (board[r][c] === value) return true
@@ -139,7 +139,7 @@ function boardHasValue(board: Board, value: MergeValue): boolean {
  * Before phasing out a value, checks if it still exists on the board.
  * If it does, keeps offering it so the player can merge it away.
  */
-export function generateNextValue(score: number, board?: Board): MergeValue {
+export function generateNextValue(score: number, board?: Board): number {
   const rand = Math.random()
 
   // If the board still has 2s, keep offering them regardless of score

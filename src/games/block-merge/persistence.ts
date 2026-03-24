@@ -1,4 +1,4 @@
-import type { GameState, MergeValue } from './game/types'
+import type { GameState } from './game/types'
 
 const LOCAL_KEY = 'block-merge-current-game'
 const HIGH_SCORE_KEY = 'block-merge-high-score'
@@ -33,7 +33,7 @@ export function loadGame(): Partial<GameState> | null {
       board: data.board as GameState['board'],
       queue: data.queue as GameState['queue'],
       score: data.score,
-      highestTile: data.highestTile as MergeValue,
+      highestTile: data.highestTile,
       totalMerges: data.totalMerges,
     }
   } catch { return null }
