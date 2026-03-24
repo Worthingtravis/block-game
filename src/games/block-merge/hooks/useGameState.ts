@@ -36,8 +36,10 @@ function tryMerge(state: GameState, board: Board, prefer?: { row: number; col: n
   const highestTile = merge.resultValue > state.highestTile
     ? merge.resultValue as MergeValue
     : state.highestTile
-  // Score = sum of all consumed blocks (group size × source value)
-  const score = state.score + found.group.length * merge.sourceValue
+  // Exponential bonus for multi-merges: value × groupSize × 2^(groupSize-2)
+  const groupSize = found.group.length
+  const multiBonus = Math.pow(2, Math.max(0, groupSize - 2))
+  const score = state.score + merge.sourceValue * groupSize * multiBonus
   const highScore = score > state.highScore
     ? (saveHighScore(score), score)
     : state.highScore
