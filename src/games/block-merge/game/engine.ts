@@ -86,6 +86,7 @@ export function resolveChains(
     merges.push({
       mergedCells,
       resultCell: { row: origin.row, col: origin.col },
+      sourceValue: currentValue,
       resultValue: nextValue,
       chainDepth,
     })

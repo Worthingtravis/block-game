@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 import MergeBoard from './components/MergeBoard'
+import MergeAnimations from './components/MergeAnimations'
 import NextQueue from './components/NextQueue'
 import ParticleCanvas from '../block-shapes/components/ParticleCanvas'
 import type { ParticleCanvasHandle } from '../block-shapes/components/ParticleCanvas'
@@ -95,6 +96,7 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
           lastDrop={state.lastDrop}
           disabled={state.gameOver}
         />
+        <MergeAnimations lastMerges={state.lastMerges} />
         <ParticleCanvas ref={particleRef} width={boardSize.width} height={boardSize.height} />
       </div>
 

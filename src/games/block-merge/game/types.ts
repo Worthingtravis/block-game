@@ -14,6 +14,7 @@ export type Board = (MergeValue | null)[][]
 export type MergeResult = {
   mergedCells: Cell[]
   resultCell: Cell
+  sourceValue: MergeValue
   resultValue: MergeValue
   chainDepth: number
 }
