@@ -124,11 +124,21 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
 
       if (state.phase === 'merging') {
-        // Track where the last merge landed for directional preference
         const preferCell = state.currentMerge?.resultCell ?? state.dropCell
         const { board, moved } = applyGravity(state.board)
+        if (moved && preferCell) {
+          // Find where the preferred cell's value ended up after gravity
+          const val = state.board[preferCell.row][preferCell.col]
+          let newPrefer = preferCell
+          if (val !== null) {
+            for (let r = board.length - 1; r >= 0; r--) {
+              if (board[r][preferCell.col] === val) { newPrefer = { row: r, col: preferCell.col }; break }
+            }
+          }
+          return { ...state, board, phase: 'gravity', currentMerge: null, dropCell: newPrefer }
+        }
         if (moved) {
-          return { ...state, board, phase: 'gravity', currentMerge: null, dropCell: preferCell ?? null }
+          return { ...state, board, phase: 'gravity', currentMerge: null }
         }
         return tryMerge(state, state.board, preferCell ?? undefined) ?? settle(state)
       }
