@@ -593,7 +593,35 @@ html, body, #root {
 .game-over-panel__best {
   font-size: 18px;
   color: var(--text-secondary);
-  margin-bottom: 24px;
+  margin-bottom: 12px;
+}
+
+.game-over-panel__crown {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #ffdd44;
+  text-shadow: 0 0 12px rgba(255, 200, 50, 0.6);
+  margin-bottom: 4px;
+  animation: crownPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes crownPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.game-over-panel__score--best {
+  color: #ffdd44;
+  text-shadow: 0 0 8px rgba(255, 200, 50, 0.4);
+}
+
+.game-over-panel__stats {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
 }
 
 .game-over-panel button {
@@ -823,6 +851,17 @@ html, body, #root {
 .replay-btn:disabled {
   opacity: 0.3;
   cursor: default;
+}
+
+.replay-btn--play {
+  width: 44px;
+  height: 44px;
+  border-color: var(--green);
+}
+
+.replay-btn--active {
+  background: rgba(76, 175, 80, 0.15);
+  border-color: var(--green);
 }
 
 .replay-label {

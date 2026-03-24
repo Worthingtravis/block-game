@@ -37,6 +37,10 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
   const [bombMode, setBombMode] = useState(false)
   const [reviewing, setReviewing] = useState(false)
   const [replayGame, setReplayGame] = useState<import('./persistence').StoredGame | null>(null)
+  const maxComboRef = useRef(1)
+
+  if (state.comboMultiplier > maxComboRef.current) maxComboRef.current = state.comboMultiplier
+  if (state.score === 0) maxComboRef.current = 1
 
   useAudio(state)
 
@@ -204,6 +208,8 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
           score={state.score}
           highScore={state.highScore}
           onNewGame={newGame}
+          maxCombo={maxComboRef.current}
+          moveCount={loadGameLocally()?.moves.length}
           onReview={() => {
             const saved = loadGameLocally()
             if (saved) { setReplayGame(saved); setReviewing(true) }
