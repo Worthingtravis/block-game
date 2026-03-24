@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import type { MergeResult } from '../game/types'
 import { VALUE_COLORS, BOARD_SIZE } from '../game/types'
 import type { MergeValue } from '../game/types'
-
-const STEP_DURATION = 350 // ms per chain step
+import type { AnimationPhase } from '../hooks/useMergeAnimation'
+import { CHAIN_STEP_DELAY } from '../hooks/useMergeAnimation'
 
 type AnimatingCell = {
   id: number
@@ -12,16 +12,17 @@ type AnimatingCell = {
   toRow: number
   toCol: number
   value: MergeValue
-  delay: number // ms delay before this cell starts sliding
+  delay: number
 }
 
 let nextAnimId = 0
 
 type MergeAnimationsProps = {
   lastMerges: MergeResult[] | null
+  phase: AnimationPhase
 }
 
-export default function MergeAnimations({ lastMerges }: MergeAnimationsProps) {
+export default function MergeAnimations({ lastMerges, phase }: MergeAnimationsProps) {
   const [cells, setCells] = useState<AnimatingCell[]>([])
   const [prevMerges, setPrevMerges] = useState<MergeResult[] | null>(null)
 
@@ -30,7 +31,8 @@ export default function MergeAnimations({ lastMerges }: MergeAnimationsProps) {
     if (lastMerges && lastMerges.length > 0) {
       const newCells: AnimatingCell[] = []
       for (const merge of lastMerges) {
-        const delay = merge.chainDepth * STEP_DURATION
+        // Chain steps stagger relative to each other
+        const delay = merge.chainDepth * CHAIN_STEP_DELAY
         for (const cell of merge.mergedCells) {
           newCells.push({
             id: nextAnimId++,
@@ -51,11 +53,12 @@ export default function MergeAnimations({ lastMerges }: MergeAnimationsProps) {
   useEffect(() => {
     if (cells.length === 0) return
     const maxDelay = Math.max(...cells.map(c => c.delay))
-    const timer = setTimeout(() => setCells([]), maxDelay + STEP_DURATION)
+    const timer = setTimeout(() => setCells([]), maxDelay + 500)
     return () => clearTimeout(timer)
   }, [cells])
 
-  if (cells.length === 0) return null
+  // Only render ghost cells during the sliding phase
+  if (cells.length === 0 || phase !== 'sliding') return null
 
   return (
     <div className="merge-anim-layer">

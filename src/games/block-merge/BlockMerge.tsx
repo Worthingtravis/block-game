@@ -9,6 +9,7 @@ import OptionsModal from '../block-shapes/components/OptionsModal'
 import { useSettings } from '../block-shapes/hooks/useSettings'
 import { useGameState } from './hooks/useGameState'
 import { useAudio } from './hooks/useAudio'
+import { useMergeAnimation, getChainStepDelay, SLIDE_DURATION } from './hooks/useMergeAnimation'
 import { BOARD_SIZE, VALUE_COLORS } from './game/types'
 
 type BlockMergeProps = {
@@ -22,8 +23,16 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
   const particleRef = useRef<ParticleCanvasHandle>(null)
   const [boardSize, setBoardSize] = useState({ width: 300, height: 300 })
   const [optionsOpen, setOptionsOpen] = useState(false)
+  const particleTimersRef = useRef<ReturnType<typeof setTimeout>[]>([])
 
   useAudio(state)
+
+  const { displayBoard, phase, dropping, poppingSet } = useMergeAnimation(
+    state.board,
+    state.preBoard,
+    state.lastMerges,
+    state.lastDrop,
+  )
 
   // Board resize observer
   useEffect(() => {
@@ -38,11 +47,15 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
     return () => observer.disconnect()
   }, [])
 
-  // Emit particles on merge
+  // Emit particles on merge -- staggered by chain depth
   useEffect(() => {
     if (!state.lastMerges || state.lastMerges.length === 0) return
     const el = boardRef.current
     if (!el || !particleRef.current) return
+
+    // Clear pending particle timers from previous move
+    for (const t of particleTimersRef.current) clearTimeout(t)
+    particleTimersRef.current = []
 
     const rect = el.getBoundingClientRect()
     const padding = parseFloat(getComputedStyle(el).padding) || 6
@@ -50,11 +63,23 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
     const cellH = (rect.height - padding * 2) / BOARD_SIZE
 
     for (const merge of state.lastMerges) {
-      const x = padding + merge.resultCell.col * cellW + cellW / 2
-      const y = padding + merge.resultCell.row * cellH + cellH / 2
-      const color = VALUE_COLORS[merge.resultValue] ?? '#ffffff'
-      const count = 6 + merge.chainDepth * 4
-      particleRef.current.emit(x, y, color, count, 1 + merge.chainDepth * 0.3)
+      // Particles fire when the pop happens (after slide finishes for this chain step)
+      const delay = getChainStepDelay(merge.chainDepth) + SLIDE_DURATION
+
+      const t = setTimeout(() => {
+        if (!particleRef.current) return
+        const x = padding + merge.resultCell.col * cellW + cellW / 2
+        const y = padding + merge.resultCell.row * cellH + cellH / 2
+        const color = VALUE_COLORS[merge.resultValue] ?? '#ffffff'
+        const count = 6 + merge.chainDepth * 4
+        particleRef.current.emit(x, y, color, count, 1 + merge.chainDepth * 0.3)
+      }, delay)
+      particleTimersRef.current.push(t)
+    }
+
+    return () => {
+      for (const t of particleTimersRef.current) clearTimeout(t)
+      particleTimersRef.current = []
     }
   }, [state.lastMerges])
 
@@ -90,13 +115,14 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
 
       <div ref={boardRef} className="board-wrapper">
         <MergeBoard
-          board={state.board}
+          board={displayBoard}
           onCellClick={placeBlock}
-          lastMerges={state.lastMerges}
           lastDrop={state.lastDrop}
+          dropping={dropping}
+          poppingSet={poppingSet}
           disabled={state.gameOver}
         />
-        <MergeAnimations lastMerges={state.lastMerges} />
+        <MergeAnimations lastMerges={state.lastMerges} phase={phase} />
         <ParticleCanvas ref={particleRef} width={boardSize.width} height={boardSize.height} />
       </div>
 
