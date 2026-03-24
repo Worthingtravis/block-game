@@ -32,10 +32,16 @@ export function useBoardEffects({ lastClear, boardRef, particleRef }: UseBoardEf
     const cellW = (rect.width - padding * 2) / BOARD_SIZE
     const cellH = (rect.height - padding * 2) / BOARD_SIZE
 
+    const colors = ['#ffffff', '#ffdd44', '#ff6644', '#44ddff', '#44ff88']
+    const lines = lastClear.linesCleared
+    const countPerCell = lines >= 4 ? 12 : lines >= 3 ? 9 : lines >= 2 ? 6 : 3
+
     for (const cell of lastClear.clearedCells) {
       const x = padding + cell.col * cellW + cellW / 2
       const y = padding + cell.row * cellH + cellH / 2
-      particleRef.current.emit(x, y, '#ffffff', lastClear.linesCleared >= 2 ? 6 : 3)
+      const color = lines >= 2 ? colors[Math.floor(Math.random() * colors.length)] : '#ffffff'
+      const intensity = lines >= 4 ? 1.8 : lines >= 3 ? 1.4 : lines >= 2 ? 1.2 : 1
+      particleRef.current.emit(x, y, color, countPerCell, intensity)
     }
   }, [lastClear, boardRef, particleRef])
 

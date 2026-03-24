@@ -10,7 +10,7 @@ type Particle = {
 }
 
 export type ParticleCanvasHandle = {
-  emit: (x: number, y: number, color: string, count: number) => void
+  emit: (x: number, y: number, color: string, count: number, intensity?: number) => void
 }
 
 const ParticleCanvas = forwardRef<ParticleCanvasHandle, { width: number; height: number }>(
@@ -19,18 +19,18 @@ const ParticleCanvas = forwardRef<ParticleCanvasHandle, { width: number; height:
     const particlesRef = useRef<Particle[]>([])
     const animFrameRef = useRef<number>(0)
 
-    const emit = useCallback((x: number, y: number, color: string, count: number) => {
+    const emit = useCallback((x: number, y: number, color: string, count: number, intensity = 1) => {
       for (let i = 0; i < count; i++) {
         const angle = Math.random() * Math.PI * 2
-        const speed = 2 + Math.random() * 4
+        const speed = (2 + Math.random() * 4) * intensity
         particlesRef.current.push({
           x, y,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
-          size: 3 + Math.random() * 5,
+          size: (3 + Math.random() * 5) * intensity,
           color,
           life: 1,
-          maxLife: 0.3 + Math.random() * 0.3,
+          maxLife: (0.3 + Math.random() * 0.3) * intensity,
         })
       }
     }, [])
