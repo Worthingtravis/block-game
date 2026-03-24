@@ -3,6 +3,8 @@ import type { MergeResult } from '../game/types'
 import { VALUE_COLORS, BOARD_SIZE } from '../game/types'
 import type { MergeValue } from '../game/types'
 
+const STEP_DURATION = 350 // ms per chain step
+
 type AnimatingCell = {
   id: number
   fromRow: number
@@ -10,6 +12,7 @@ type AnimatingCell = {
   toRow: number
   toCol: number
   value: MergeValue
+  delay: number // ms delay before this cell starts sliding
 }
 
 let nextAnimId = 0
@@ -27,6 +30,7 @@ export default function MergeAnimations({ lastMerges }: MergeAnimationsProps) {
     if (lastMerges && lastMerges.length > 0) {
       const newCells: AnimatingCell[] = []
       for (const merge of lastMerges) {
+        const delay = merge.chainDepth * STEP_DURATION
         for (const cell of merge.mergedCells) {
           newCells.push({
             id: nextAnimId++,
@@ -35,6 +39,7 @@ export default function MergeAnimations({ lastMerges }: MergeAnimationsProps) {
             toRow: merge.resultCell.row,
             toCol: merge.resultCell.col,
             value: merge.sourceValue,
+            delay,
           })
         }
       }
@@ -42,10 +47,11 @@ export default function MergeAnimations({ lastMerges }: MergeAnimationsProps) {
     }
   }
 
-  // Clear animated cells after animation completes
+  // Clear after all animations finish
   useEffect(() => {
     if (cells.length === 0) return
-    const timer = setTimeout(() => setCells([]), 300)
+    const maxDelay = Math.max(...cells.map(c => c.delay))
+    const timer = setTimeout(() => setCells([]), maxDelay + STEP_DURATION)
     return () => clearTimeout(timer)
   }, [cells])
 
@@ -70,6 +76,7 @@ export default function MergeAnimations({ lastMerges }: MergeAnimationsProps) {
               backgroundColor: VALUE_COLORS[cell.value],
               '--dx': `${dxPct}cqi`,
               '--dy': `${dyPct}cqi`,
+              animationDelay: `${cell.delay}ms`,
             } as React.CSSProperties}
           >
             {cell.value}
