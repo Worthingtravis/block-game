@@ -16,15 +16,10 @@ export type MergeResult = {
   resultCell: Cell
   sourceValue: MergeValue
   resultValue: MergeValue
-  chainDepth: number
 }
 
-export type DropInfo = {
-  col: number
-  fromRow: number
-  toRow: number
-  value: MergeValue
-}
+/** Visual phase the game is in */
+export type Phase = 'idle' | 'dropping' | 'merging' | 'gravity'
 
 export type GameState = {
   board: Board
@@ -32,14 +27,17 @@ export type GameState = {
   score: number
   highScore: number
   highestTile: MergeValue
-  comboMultiplier: number
   totalMerges: number
   gameOver: boolean
-  lastMerges: MergeResult[] | null
-  lastDrop: DropInfo | null
+  phase: Phase
+  /** The merge that just happened (for animation/audio) */
+  currentMerge: MergeResult | null
+  /** Column where last block was dropped */
+  dropCol: number | null
 }
 
 export type GameAction =
-  | { type: 'PLACE_BLOCK'; position: Cell }
+  | { type: 'PLACE_BLOCK'; col: number }
+  | { type: 'STEP' }
   | { type: 'NEW_GAME' }
   | { type: 'LOAD_STATE'; state: GameState }

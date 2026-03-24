@@ -1,42 +1,37 @@
 import MergeCell from './MergeCell'
-import type { Board, Cell, DropInfo } from '../game/types'
+import type { Board, MergeResult, Phase } from '../game/types'
 import { BOARD_SIZE } from '../game/types'
 
 type MergeBoardProps = {
   board: Board
-  onCellClick: (position: Cell) => void
-  lastDrop?: DropInfo | null
-  dropping?: boolean
-  poppingSet?: Set<string>
+  onCellClick: (col: number) => void
+  phase: Phase
+  currentMerge?: MergeResult | null
+  dropCol?: number | null
   disabled?: boolean
 }
 
-export default function MergeBoard({
-  board,
-  onCellClick,
-  lastDrop,
-  dropping,
-  poppingSet,
-  disabled,
-}: MergeBoardProps) {
+export default function MergeBoard({ board, onCellClick, phase, currentMerge, dropCol, disabled }: MergeBoardProps) {
   return (
     <div className="merge-board">
       {Array.from({ length: BOARD_SIZE * BOARD_SIZE }, (_, i) => {
         const row = Math.floor(i / BOARD_SIZE)
         const col = i % BOARD_SIZE
         const value = board[row][col]
-        const key = `${row},${col}`
-        const isMerging = poppingSet ? poppingSet.has(key) : false
-        const isDropping = dropping && lastDrop && lastDrop.col === col && row === lastDrop.toRow && !isMerging
-        const dropDist = isDropping ? lastDrop.toRow : 0
+
+        const isMergeResult = phase === 'merging' && currentMerge &&
+          currentMerge.resultCell.row === row && currentMerge.resultCell.col === col
+
+        const isDropping = phase === 'dropping' && dropCol === col &&
+          value !== null && (row === 0 || board[row - 1]?.[col] === null)
+
         return (
           <MergeCell
             key={`${row}-${col}`}
             value={value}
-            merging={isMerging}
+            merging={!!isMergeResult}
             dropping={!!isDropping}
-            dropDistance={dropDist}
-            onClick={disabled ? undefined : () => onCellClick({ row, col })}
+            onClick={disabled || phase !== 'idle' ? undefined : () => onCellClick(col)}
           />
         )
       })}

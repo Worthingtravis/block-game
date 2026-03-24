@@ -1,6 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 import MergeBoard from './components/MergeBoard'
-import MergeAnimations from './components/MergeAnimations'
 import NextQueue from './components/NextQueue'
 import ParticleCanvas from '../block-shapes/components/ParticleCanvas'
 import type { ParticleCanvasHandle } from '../block-shapes/components/ParticleCanvas'
@@ -9,7 +8,6 @@ import OptionsModal from '../block-shapes/components/OptionsModal'
 import { useSettings } from '../block-shapes/hooks/useSettings'
 import { useGameState } from './hooks/useGameState'
 import { useAudio } from './hooks/useAudio'
-import { useMergeAnimation, getChainStepDelay, SLIDE_DURATION } from './hooks/useMergeAnimation'
 import { BOARD_SIZE, VALUE_COLORS } from './game/types'
 
 type BlockMergeProps = {
@@ -23,16 +21,9 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
   const particleRef = useRef<ParticleCanvasHandle>(null)
   const [boardSize, setBoardSize] = useState({ width: 300, height: 300 })
   const [optionsOpen, setOptionsOpen] = useState(false)
-  const particleTimersRef = useRef<ReturnType<typeof setTimeout>[]>([])
 
   useAudio(state)
 
-  const { phase, dropping, poppingSet } = useMergeAnimation(
-    state.lastMerges,
-    state.lastDrop,
-  )
-
-  // Board resize observer
   useEffect(() => {
     const el = boardRef.current
     if (!el) return
@@ -45,41 +36,23 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
     return () => observer.disconnect()
   }, [])
 
-  // Emit particles on merge -- staggered by chain depth
+  // Particles on merge
   useEffect(() => {
-    if (!state.lastMerges || state.lastMerges.length === 0) return
+    if (state.phase !== 'merging' || !state.currentMerge) return
     const el = boardRef.current
     if (!el || !particleRef.current) return
-
-    // Clear pending particle timers from previous move
-    for (const t of particleTimersRef.current) clearTimeout(t)
-    particleTimersRef.current = []
 
     const rect = el.getBoundingClientRect()
     const padding = parseFloat(getComputedStyle(el).padding) || 6
     const cellW = (rect.width - padding * 2) / BOARD_SIZE
     const cellH = (rect.height - padding * 2) / BOARD_SIZE
 
-    for (const merge of state.lastMerges) {
-      // Particles fire when the pop happens (after slide finishes for this chain step)
-      const delay = getChainStepDelay(merge.chainDepth) + SLIDE_DURATION
-
-      const t = setTimeout(() => {
-        if (!particleRef.current) return
-        const x = padding + merge.resultCell.col * cellW + cellW / 2
-        const y = padding + merge.resultCell.row * cellH + cellH / 2
-        const color = VALUE_COLORS[merge.resultValue] ?? '#ffffff'
-        const count = 6 + merge.chainDepth * 4
-        particleRef.current.emit(x, y, color, count, 1 + merge.chainDepth * 0.3)
-      }, delay)
-      particleTimersRef.current.push(t)
-    }
-
-    return () => {
-      for (const t of particleTimersRef.current) clearTimeout(t)
-      particleTimersRef.current = []
-    }
-  }, [state.lastMerges])
+    const merge = state.currentMerge
+    const x = padding + merge.resultCell.col * cellW + cellW / 2
+    const y = padding + merge.resultCell.row * cellH + cellH / 2
+    const color = VALUE_COLORS[merge.resultValue] ?? '#ffffff'
+    particleRef.current.emit(x, y, color, 8, 1.2)
+  }, [state.phase, state.currentMerge])
 
   const handleRestart = useCallback(() => {
     setOptionsOpen(false)
@@ -97,7 +70,7 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
         <ScoreDisplay
           score={state.score}
           highScore={state.highScore}
-          comboMultiplier={state.comboMultiplier}
+          comboMultiplier={1}
         />
         <button
           className="options-btn"
@@ -115,12 +88,11 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
         <MergeBoard
           board={state.board}
           onCellClick={placeBlock}
-          lastDrop={state.lastDrop}
-          dropping={dropping}
-          poppingSet={poppingSet}
+          phase={state.phase}
+          currentMerge={state.currentMerge}
+          dropCol={state.dropCol}
           disabled={state.gameOver}
         />
-        <MergeAnimations lastMerges={state.lastMerges} phase={phase} />
         <ParticleCanvas ref={particleRef} width={boardSize.width} height={boardSize.height} />
       </div>
 

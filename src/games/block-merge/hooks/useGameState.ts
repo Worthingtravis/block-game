@@ -1,9 +1,10 @@
-import { useReducer, useCallback, useEffect, useState } from 'react'
-import type { GameState, GameAction, Cell, MergeValue } from '../game/types'
-import { createEmptyBoard, resolveChains, checkGameOver, generateNextValue } from '../game/engine'
+import { useReducer, useCallback, useEffect, useState, useRef } from 'react'
+import type { GameState, GameAction, MergeValue } from '../game/types'
+import { createEmptyBoard, dropBlock, findAnyMerge, applyMerge, applyGravity, checkGameOver, generateNextValue } from '../game/engine'
 import { BOARD_SIZE } from '../game/types'
-import { calculateMergeScore } from '../game/scoring'
 import { saveGame, loadGame, clearGame, loadHighScore, saveHighScore } from '../persistence'
+
+const STEP_INTERVAL = 350
 
 function buildGameState(overrides: Partial<GameState> = {}): GameState {
   return {
@@ -12,79 +13,148 @@ function buildGameState(overrides: Partial<GameState> = {}): GameState {
     score: 0,
     highScore: loadHighScore(),
     highestTile: 2,
-    comboMultiplier: 1,
     totalMerges: 0,
     gameOver: false,
-    lastMerges: null,
-    lastDrop: null,
+    phase: 'idle',
+    currentMerge: null,
+    dropCol: null,
     ...overrides,
   }
 }
 
 function createInitialState(): GameState {
   const saved = loadGame()
-  if (saved && !saved.gameOver) {
-    return buildGameState(saved)
-  }
+  if (saved && !saved.gameOver) return buildGameState(saved)
   return buildGameState()
 }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'PLACE_BLOCK': {
-      const { position } = action
-      if (state.gameOver) return state
+      if (state.phase !== 'idle' || state.gameOver) return state
+      const col = action.col
 
-      // Drop block to the lowest empty cell in this column
-      const col = position.col
-      let dropRow = -1
-      for (let r = BOARD_SIZE - 1; r >= 0; r--) {
-        if (state.board[r][col] === null) { dropRow = r; break }
+      // Check column has space
+      let hasSpace = false
+      for (let r = 0; r < BOARD_SIZE; r++) {
+        if (state.board[r][col] === null) { hasSpace = true; break }
       }
-      if (dropRow < 0) return state // column is full
+      if (!hasSpace) return state
 
-      const currentValue = state.queue[0]
-      const newBoard = state.board.map(r => [...r])
-      newBoard[dropRow][col] = currentValue
-      const dropPosition = { row: dropRow, col }
-
-      const { board: resolvedBoard, merges } = resolveChains(newBoard, dropPosition)
-
-      const mergeScore = calculateMergeScore(merges)
-      const score = state.score + mergeScore + 1
-
-      let highestTile = state.highestTile
-      for (const merge of merges) {
-        if (merge.resultValue > highestTile) highestTile = merge.resultValue as MergeValue
-      }
-
-      let highScore = state.highScore
-      if (score > highScore) {
-        highScore = score
-        saveHighScore(highScore)
-      }
+      const value = state.queue[0]
+      const { board, row } = dropBlock(state.board, col, value)
+      if (row < 0) return state
 
       const nextQueue: [MergeValue, MergeValue, MergeValue] = [
         state.queue[1],
         state.queue[2],
-        generateNextValue(score),
+        generateNextValue(state.score),
       ]
 
-      const gameOver = checkGameOver(resolvedBoard)
-      if (gameOver) clearGame()
-
       return {
-        board: resolvedBoard,
+        ...state,
+        board,
         queue: nextQueue,
-        score,
-        highScore,
-        highestTile,
-        comboMultiplier: merges.length > 0 ? merges.length : 1,
-        totalMerges: state.totalMerges + merges.length,
-        gameOver,
-        lastMerges: merges.length > 0 ? merges : null,
-        lastDrop: { col, fromRow: 0, toRow: dropRow, value: currentValue },
+        phase: 'dropping',
+        currentMerge: null,
+        dropCol: col,
       }
+    }
+
+    case 'STEP': {
+      if (state.phase === 'idle') return state
+
+      if (state.phase === 'dropping') {
+        // After drop animation, check for merges
+        const found = findAnyMerge(state.board)
+        if (found) {
+          const { board, merge } = applyMerge(state.board, found.origin, found.group)
+          let highestTile = state.highestTile
+          if (merge.resultValue > highestTile) highestTile = merge.resultValue as MergeValue
+          const score = state.score + merge.resultValue
+          let highScore = state.highScore
+          if (score > highScore) { highScore = score; saveHighScore(highScore) }
+
+          return {
+            ...state,
+            board,
+            score,
+            highScore,
+            highestTile,
+            totalMerges: state.totalMerges + 1,
+            phase: 'merging',
+            currentMerge: merge,
+            dropCol: null,
+          }
+        }
+        // No merge — settle
+        const gameOver = checkGameOver(state.board)
+        if (gameOver) clearGame()
+        return { ...state, phase: 'idle', currentMerge: null, dropCol: null, gameOver }
+      }
+
+      if (state.phase === 'merging') {
+        // After merge animation, apply gravity
+        const { board, moved } = applyGravity(state.board)
+        if (moved) {
+          return { ...state, board, phase: 'gravity', currentMerge: null }
+        }
+        // No gravity needed — check for more merges
+        const found = findAnyMerge(state.board)
+        if (found) {
+          const { board: mergedBoard, merge } = applyMerge(state.board, found.origin, found.group)
+          let highestTile = state.highestTile
+          if (merge.resultValue > highestTile) highestTile = merge.resultValue as MergeValue
+          const score = state.score + merge.resultValue
+          let highScore = state.highScore
+          if (score > highScore) { highScore = score; saveHighScore(highScore) }
+
+          return {
+            ...state,
+            board: mergedBoard,
+            score,
+            highScore,
+            highestTile,
+            totalMerges: state.totalMerges + 1,
+            phase: 'merging',
+            currentMerge: merge,
+          }
+        }
+        // No more merges — settle
+        const gameOver = checkGameOver(state.board)
+        if (gameOver) clearGame()
+        return { ...state, phase: 'idle', currentMerge: null, gameOver }
+      }
+
+      if (state.phase === 'gravity') {
+        // After gravity animation, check for new merges
+        const found = findAnyMerge(state.board)
+        if (found) {
+          const { board, merge } = applyMerge(state.board, found.origin, found.group)
+          let highestTile = state.highestTile
+          if (merge.resultValue > highestTile) highestTile = merge.resultValue as MergeValue
+          const score = state.score + merge.resultValue
+          let highScore = state.highScore
+          if (score > highScore) { highScore = score; saveHighScore(highScore) }
+
+          return {
+            ...state,
+            board,
+            score,
+            highScore,
+            highestTile,
+            totalMerges: state.totalMerges + 1,
+            phase: 'merging',
+            currentMerge: merge,
+          }
+        }
+        // No merges after gravity — settle
+        const gameOver = checkGameOver(state.board)
+        if (gameOver) clearGame()
+        return { ...state, phase: 'idle', currentMerge: null, gameOver }
+      }
+
+      return state
     }
 
     case 'NEW_GAME': {
@@ -104,18 +174,31 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 export function useGameState() {
   const [initial] = useState(createInitialState)
   const [state, dispatch] = useReducer(gameReducer, initial)
+  const stepTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const placeBlock = useCallback((position: Cell) => {
-    dispatch({ type: 'PLACE_BLOCK', position })
+  const placeBlock = useCallback((col: number) => {
+    dispatch({ type: 'PLACE_BLOCK', col })
   }, [])
 
   const newGame = useCallback(() => {
     dispatch({ type: 'NEW_GAME' })
   }, [])
 
-  // Auto-save
+  // Auto-step when not idle
   useEffect(() => {
-    if (!state.gameOver) saveGame(state)
+    if (state.phase === 'idle') return
+    const delay = state.phase === 'dropping' ? 250 : STEP_INTERVAL
+    stepTimerRef.current = setTimeout(() => {
+      dispatch({ type: 'STEP' })
+    }, delay)
+    return () => {
+      if (stepTimerRef.current) clearTimeout(stepTimerRef.current)
+    }
+  }, [state.phase, state.board])
+
+  // Auto-save when idle
+  useEffect(() => {
+    if (state.phase === 'idle' && !state.gameOver) saveGame(state)
   }, [state])
 
   return { state, placeBlock, newGame }
