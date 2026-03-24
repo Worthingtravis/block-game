@@ -1634,6 +1634,33 @@ html, body, #root {
 
 /* --- Animations --- */
 
+/* Merge animation overlay */
+.merge-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 80;
+}
+
+.merge-fly-disc {
+  position: absolute;
+  width: calc(var(--hex-w) * 0.6);
+  height: calc(var(--hex-w) * 0.6);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  filter: blur(1px);
+  box-shadow: 0 0 12px currentColor;
+}
+
+.merge-glow {
+  position: absolute;
+  width: calc(var(--hex-w) * 0.8);
+  height: calc(var(--hex-w) * 0.8);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  filter: blur(8px);
+}
+
 @media (max-width: 420px) {
   .hex-board { --hex-w: 48px; }
 }

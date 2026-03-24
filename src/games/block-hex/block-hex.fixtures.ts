@@ -20,6 +20,7 @@ function fixture(overrides: Partial<BlockHexVM> = {}): BlockHexVM {
   return {
     cells: buildCells(emptyBoard(), null),
     phase: 'idle',
+    lastMatch: null,
     tiles: [
       { layers: ['blue'], isCurrent: true },
       { layers: ['red', 'green'], isCurrent: false },

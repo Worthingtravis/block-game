@@ -25,6 +25,7 @@ export default function BlockHexConnected({ onBack }: BlockHexConnectedProps) {
   const vm: BlockHexVM = {
     cells: buildCells(state.board, state.lastMatch),
     phase: state.phase,
+    lastMatch: state.lastMatch,
     tiles: buildTiles(state.queue),
     score: state.score,
     highScore: state.highScore,

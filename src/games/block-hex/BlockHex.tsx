@@ -1,5 +1,6 @@
 import type { BlockHexVM } from './block-hex.vm'
 import HexBoard from './components/HexBoard'
+import MergeOverlay from './components/MergeOverlay'
 import TileQueue from './components/TileQueue'
 import ScoreDisplay from '../block-shapes/components/ScoreDisplay'
 import OptionsModal from '../block-shapes/components/OptionsModal'
@@ -29,6 +30,7 @@ export function BlockHexView(vm: BlockHexVM) {
 
       <div className="board-wrapper">
         <HexBoard cells={vm.cells} onCellClick={vm.onCellClick} />
+        <MergeOverlay cells={vm.cells} lastMatch={vm.lastMatch} phase={vm.phase} />
       </div>
 
       <div className="bottom-controls">

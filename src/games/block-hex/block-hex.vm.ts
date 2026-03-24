@@ -1,6 +1,8 @@
 import type { HexColor, Phase, Board, Tile, MatchResult } from './game/types'
 import type { Settings } from '../../shared/useSettings'
 
+export type { MatchResult }
+
 /** Gemstone color palette — vibrant saturated tones with depth */
 export const HEX_COLORS: Record<HexColor, { face: string; edge: string; border: string; glow: string }> = {
   blue:   { face: '#4C9EFF', edge: '#2A6CC7', border: '#7AB8FF', glow: 'rgba(76, 158, 255, 0.4)' },
@@ -36,6 +38,7 @@ export type BlockHexVM = {
   // Board
   cells: HexCellVM[]
   phase: Phase
+  lastMatch: MatchResult | null
 
   // Queue
   tiles: [TileVM, TileVM, TileVM]
