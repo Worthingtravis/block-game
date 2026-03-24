@@ -80,6 +80,15 @@ export function applyBomb(board: Board, position: Cell): { board: Board; clearRe
     }
   }
 
+  // 3x3 blast radius around drop point
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      const r = position.row + dr
+      const c = position.col + dc
+      if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) addCell(r, c)
+    }
+  }
+
   // Clear entire row and column through the bomb position
   for (let col = 0; col < BOARD_SIZE; col++) addCell(position.row, col)
   for (let row = 0; row < BOARD_SIZE; row++) addCell(row, position.col)

@@ -169,11 +169,22 @@ export default function BlockShapes({ onBack, syncService }: BlockShapesProps) {
   // Bomb cross-hair preview: full row + column
   const bombPreviewCells = useMemo(() => {
     if (!bombHoverCell) return undefined
+    const cellSet = new Set<string>()
     const cells: { row: number; col: number }[] = []
-    for (let c = 0; c < BOARD_SIZE; c++) cells.push({ row: bombHoverCell.row, col: c })
-    for (let r = 0; r < BOARD_SIZE; r++) {
-      if (r !== bombHoverCell.row) cells.push({ row: r, col: bombHoverCell.col })
+    const add = (r: number, c: number) => {
+      const key = `${r},${c}`
+      if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && !cellSet.has(key)) {
+        cellSet.add(key)
+        cells.push({ row: r, col: c })
+      }
     }
+    // 3x3 blast radius
+    for (let dr = -1; dr <= 1; dr++)
+      for (let dc = -1; dc <= 1; dc++)
+        add(bombHoverCell.row + dr, bombHoverCell.col + dc)
+    // Full row + column
+    for (let c = 0; c < BOARD_SIZE; c++) add(bombHoverCell.row, c)
+    for (let r = 0; r < BOARD_SIZE; r++) add(r, bombHoverCell.col)
     return cells
   }, [bombHoverCell])
 

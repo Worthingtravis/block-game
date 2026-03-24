@@ -87,9 +87,32 @@ export function playCombo(comboLevel: number) {
 }
 
 export function playBombExplode() {
-  playTone(80, 0.4, 'sawtooth', 0.35)
-  playTone(60, 0.6, 'sawtooth', 0.25, 0.05)
-  playTone(200, 0.2, 'sine', 0.2, 0.1)
+  if (!soundEnabled) return
+  const ctx = getCtx()
+  const vol = masterVolume
+
+  // Noise burst for explosion texture
+  const bufferSize = ctx.sampleRate * 0.3
+  const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
+  const data = noiseBuffer.getChannelData(0)
+  for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1)
+  const noise = ctx.createBufferSource()
+  noise.buffer = noiseBuffer
+  const noiseGain = ctx.createGain()
+  noiseGain.gain.setValueAtTime(0.25 * vol, ctx.currentTime)
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
+  noise.connect(noiseGain)
+  noiseGain.connect(ctx.destination)
+  noise.start(ctx.currentTime)
+
+  // Deep impact rumble
+  playTone(50, 0.5, 'sawtooth', 0.3)
+  playTone(35, 0.7, 'triangle', 0.25, 0.02)
+  // Mid crack
+  playTone(150, 0.15, 'square', 0.2, 0.01)
+  // High shatter
+  playTone(400, 0.08, 'sawtooth', 0.15, 0.03)
+  playTone(600, 0.06, 'sine', 0.1, 0.05)
 }
 
 export function playBombEarned() {
