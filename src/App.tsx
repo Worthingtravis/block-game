@@ -1,8 +1,37 @@
 import { useState, lazy, Suspense } from 'react'
+import { authClient } from './auth'
 
 const BlockShapes = lazy(() => import('./games/block-shapes/BlockShapes'))
 
 type GameId = 'menu' | 'block-shapes' | 'block-merge'
+
+function UserBar() {
+  const session = authClient.useSession()
+
+  if (session.isPending) return null
+
+  if (!session.data) {
+    return (
+      <div className="user-bar">
+        <button className="user-bar__btn" onClick={() => authClient.signIn.social({ provider: 'google', callbackURL: '/' })}>
+          Sign in with Google
+        </button>
+        <button className="user-bar__btn user-bar__btn--secondary" onClick={() => authClient.signIn.social({ provider: 'github', callbackURL: '/' })}>
+          Sign in with GitHub
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="user-bar">
+      <span className="user-bar__name">{session.data.user.name || session.data.user.email}</span>
+      <button className="user-bar__btn user-bar__btn--secondary" onClick={() => authClient.signOut()}>
+        Sign out
+      </button>
+    </div>
+  )
+}
 
 export default function App() {
   const [activeGame, setActiveGame] = useState<GameId>('menu')
@@ -17,6 +46,8 @@ export default function App() {
 
   return (
     <div className="menu-container">
+      <UserBar />
+
       <h1 className="menu-title">Block Games</h1>
       <p className="menu-subtitle">Choose a game</p>
 

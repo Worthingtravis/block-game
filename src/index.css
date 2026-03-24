@@ -83,6 +83,50 @@ html, body, #root {
 
 /* ===== Layout ===== */
 
+/* ===== User bar ===== */
+
+.user-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 360px;
+  margin-bottom: 24px;
+  justify-content: flex-end;
+}
+
+.user-bar__name {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-right: auto;
+}
+
+.user-bar__btn {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  background: var(--blue);
+  color: white;
+  cursor: pointer;
+  transition: opacity 150ms;
+}
+
+.user-bar__btn:hover {
+  opacity: 0.85;
+}
+
+.user-bar__btn--secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+}
+
+.user-bar__btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+}
+
 /* ===== Menu ===== */
 
 .game-loading {
