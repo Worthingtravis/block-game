@@ -558,6 +558,14 @@ html, body, #root {
   color: var(--text-primary);
 }
 
+.options-version {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  opacity: 0.5;
+  margin-top: 12px;
+}
+
 /* ===== Game Over ===== */
 
 .game-over-overlay {

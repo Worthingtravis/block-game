@@ -77,6 +77,12 @@ export default function OptionsModal({ settings, onUpdate, onClose, onRestart }:
         <button className="options-restart" onClick={onRestart}>
           Restart Game
         </button>
+
+        <div className="options-version">
+          {import.meta.env.VITE_VERCEL_GIT_COMMIT_SHA
+            ? `Build ${import.meta.env.VITE_VERCEL_GIT_COMMIT_SHA.slice(0, 7)}`
+            : 'Local build'}
+        </div>
       </div>
     </div>
   )
