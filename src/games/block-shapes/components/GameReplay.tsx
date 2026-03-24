@@ -125,7 +125,7 @@ export default function GameReplay({ game, onClose }: GameReplayProps) {
   const statusLabel = game.status === 'game_over' ? 'Game Over' : game.status === 'abandoned' ? 'Abandoned' : 'In Progress'
 
   return (
-    <div className="game-container">
+    <div className="replay-overlay">
       <div className="top-bar">
         <button className="back-btn" onClick={onClose} aria-label="Close replay">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
