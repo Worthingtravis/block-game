@@ -11,7 +11,7 @@ type MergeCellProps = {
 }
 
 export default memo(function MergeCell({ value, merging, dropping, columnHighlight, onClick, onMouseEnter }: MergeCellProps) {
-  if (!value) {
+  if (value === null) {
     const emptyClasses = columnHighlight
       ? 'merge-cell merge-cell--empty merge-cell--col-hover'
       : 'merge-cell merge-cell--empty'

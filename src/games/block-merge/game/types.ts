@@ -4,10 +4,13 @@ export type Cell = { row: number; col: number }
 export type Board = (number | null)[][]
 
 export type MergeResult = {
+  /** Cells consumed by the merge (excludes the result cell). */
   mergedCells: Cell[]
   resultCell: Cell
   sourceValue: number
   resultValue: number
+  /** Total cells in the merge group (mergedCells.length + 1). */
+  groupSize: number
 }
 
 export type Phase = 'idle' | 'dropping' | 'merging' | 'gravity'

@@ -6,7 +6,6 @@ export function useAudio(state: GameState): void {
   const [prevPhase, setPrevPhase] = useState(state.phase)
   const [prevGameOver, setPrevGameOver] = useState(state.gameOver)
   const [prevHighestTile, setPrevHighestTile] = useState(state.highestTile)
-  const [mergeCount, setMergeCount] = useState(0)
 
   if (state.phase !== prevPhase) {
     setPrevPhase(state.phase)
@@ -16,14 +15,8 @@ export function useAudio(state: GameState): void {
     }
 
     if (state.phase === 'merging' && state.currentMerge) {
-      const newCount = mergeCount + 1
-      setMergeCount(newCount)
       playMerge(state.currentMerge.resultValue, state.currentMerge.mergedCells.length + 1)
-      if (newCount > 1) playChainReaction(newCount - 1)
-    }
-
-    if (state.phase === 'idle') {
-      setMergeCount(0)
+      if (state.chainStep > 1) playChainReaction(state.chainStep - 1)
     }
   }
 

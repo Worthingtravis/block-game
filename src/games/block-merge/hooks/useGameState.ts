@@ -39,14 +39,15 @@ function tryMerge(state: GameState, board: Board, prefer?: { row: number; col: n
     ? merge.resultValue
     : state.highestTile
 
-  const groupSize = found.group.length
-  const points = calculateMergePoints(merge.sourceValue, groupSize)
+  const points = calculateMergePoints(merge.sourceValue, merge.groupSize)
   const chainBonus = calculateChainBonus(state.chainStep)
   const score = state.score + points * chainBonus
 
-  const highScore = score > state.highScore
-    ? (saveHighScore(score), score)
-    : state.highScore
+  let highScore = state.highScore
+  if (score > highScore) {
+    highScore = score
+    saveHighScore(highScore)
+  }
 
   return {
     ...state,
@@ -158,10 +159,10 @@ export function useGameState() {
     }
   }, [state.phase, state.board])
 
-  // Auto-save when idle
+  // Auto-save when settling to idle
   useEffect(() => {
     if (state.phase === 'idle' && !state.gameOver) saveGame(state)
-  }, [state])
+  }, [state.phase, state.gameOver])
 
   return { state, placeBlock, newGame }
 }

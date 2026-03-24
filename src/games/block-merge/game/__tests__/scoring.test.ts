@@ -10,6 +10,7 @@ function merge(sourceValue: number, groupSize: number, resultValue?: number): Me
     resultCell: { row: 0, col: 0 },
     sourceValue,
     resultValue: rv,
+    groupSize,
   }
 }
 

@@ -75,7 +75,7 @@ export function applyMerge(board: Board, origin: Cell, group: Cell[]): { board: 
 
   return {
     board: newBoard,
-    merge: { mergedCells, resultCell: origin, sourceValue, resultValue },
+    merge: { mergedCells, resultCell: origin, sourceValue, resultValue, groupSize: group.length },
   }
 }
 

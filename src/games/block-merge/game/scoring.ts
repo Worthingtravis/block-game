@@ -25,8 +25,7 @@ export function calculateTotalScore(merges: MergeResult[]): number {
   let total = 0
   for (let i = 0; i < merges.length; i++) {
     const merge = merges[i]
-    const groupSize = merge.mergedCells.length + 1
-    const points = calculateMergePoints(merge.sourceValue, groupSize)
+    const points = calculateMergePoints(merge.sourceValue, merge.groupSize)
     const bonus = calculateChainBonus(i)
     total += points * bonus
   }
