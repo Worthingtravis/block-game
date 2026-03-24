@@ -6,6 +6,7 @@ import { neonClient } from './db'
 import Navbar from './components/Navbar'
 import SidePanel from './components/SidePanel'
 import Leaderboard from './components/Leaderboard'
+import { useSettings } from './shared/useSettings'
 
 const BlockShapes = lazy(() => import('./games/block-shapes/BlockShapes'))
 const BlockMerge = lazy(() => import('./games/block-merge/BlockMerge'))
@@ -16,6 +17,7 @@ export default function App() {
   const [activePage, setActivePage] = useState<Page>('menu')
   const [sideOpen, setSideOpen] = useState(false)
   const session = authClient.useSession()
+  useSettings() // Apply theme on app startup
 
   const syncService = useMemo(() => {
     if (!session.data || !import.meta.env.VITE_NEON_DATA_API_URL) return null

@@ -152,7 +152,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'STEP': {
-      if (state.phase === 'idle' || state.phase === 'levelup') return state
+      if (state.phase === 'idle') return state
+
+      if (state.phase === 'levelup') {
+        return { ...state, phase: 'idle', levelUpRemoved: null }
+      }
 
       if (state.phase === 'dropping') {
         return tryMerge(state, state.board, state.dropCell ?? undefined) ?? settle(state)
@@ -211,6 +215,10 @@ export function useGameState() {
     dispatch({ type: 'NEW_GAME' })
   }, [])
 
+  const dismissLevelUp = useCallback(() => {
+    dispatch({ type: 'STEP' })
+  }, [])
+
   // Auto-step when animating
   useEffect(() => {
     if (state.phase === 'idle' || state.phase === 'levelup') return
@@ -228,5 +236,5 @@ export function useGameState() {
     if (state.phase === 'idle' && !state.gameOver) saveGame(state)
   }, [state.phase, state.gameOver])
 
-  return { state, placeBlock, newGame }
+  return { state, placeBlock, newGame, dismissLevelUp }
 }
