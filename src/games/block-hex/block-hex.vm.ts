@@ -1,13 +1,13 @@
 import type { HexColor, Phase, Board, Tile, MatchResult } from './game/types'
 import type { Settings } from '../../shared/useSettings'
 
-/** Color values for rendering */
-export const HEX_COLORS: Record<HexColor, { face: string; edge: string; border: string }> = {
-  blue:   { face: '#4a90d9', edge: '#3a70b0', border: '#5BA0E9' },
-  red:    { face: '#f44336', edge: '#c62828', border: '#FF6659' },
-  yellow: { face: '#ffdd44', edge: '#ccb030', border: '#FFEA70' },
-  green:  { face: '#4caf50', edge: '#388e3c', border: '#6ECF72' },
-  purple: { face: '#9c27b0', edge: '#7b1fa2', border: '#BC47D0' },
+/** Gemstone color palette — vibrant saturated tones with depth */
+export const HEX_COLORS: Record<HexColor, { face: string; edge: string; border: string; glow: string }> = {
+  blue:   { face: '#4C9EFF', edge: '#2A6CC7', border: '#7AB8FF', glow: 'rgba(76, 158, 255, 0.4)' },
+  red:    { face: '#FF4757', edge: '#C0392B', border: '#FF6B7A', glow: 'rgba(255, 71, 87, 0.4)' },
+  yellow: { face: '#FFD32A', edge: '#C9A800', border: '#FFE066', glow: 'rgba(255, 211, 42, 0.4)' },
+  green:  { face: '#2ED573', edge: '#1E8C4C', border: '#5AE896', glow: 'rgba(46, 213, 115, 0.4)' },
+  purple: { face: '#A55EEA', edge: '#7C3ABA', border: '#C184F0', glow: 'rgba(165, 94, 234, 0.4)' },
 }
 
 /** Pre-computed cell data for rendering */

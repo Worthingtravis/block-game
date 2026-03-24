@@ -3,7 +3,7 @@ import type { HexCellVM } from '../block-hex.vm'
 import { HEX_COLORS } from '../block-hex.vm'
 
 const MAX_VISIBLE_LAYERS = 5
-const LAYER_OFFSET = 4 // px between stacked layers
+const LAYER_OFFSET = 4
 
 const HexCell = memo(function HexCell({
   cell,
@@ -45,6 +45,7 @@ const HexCell = memo(function HexCell({
                   '--disc-face': colors.face,
                   '--disc-edge': colors.edge,
                   '--disc-border': colors.border,
+                  '--disc-glow': colors.glow,
                   '--disc-depth': `${depth}px`,
                 } as React.CSSProperties}
               />

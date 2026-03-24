@@ -1429,20 +1429,24 @@ html, body, #root {
   100% { transform: scale(1); }
 }
 
-/* ===== Block Hex ===== */
+/* ===== Block Hex — Gemstone Table ===== */
 
 .hex-board {
-  --hex-w: 60px;
+  --hex-w: 58px;
   --hex-h: calc(var(--hex-w) * 1.155);
   --hex-row-h: calc(var(--hex-h) * 0.75);
-  --hex-gap: 3px;
 
   position: relative;
-  width: calc(6 * var(--hex-w) + 5 * var(--hex-gap));
-  height: calc(4 * var(--hex-row-h) + var(--hex-h) + 20px);
+  width: calc(6 * var(--hex-w));
+  height: calc(4 * var(--hex-row-h) + var(--hex-h) + 24px);
   margin: 0 auto;
+  padding: 20px;
+  /* Velvet surface background */
+  background: radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.04) 0%, transparent 70%);
+  border-radius: 24px;
 }
 
+/* Absolute positioning wrapper */
 .hex-cell-pos {
   position: absolute;
   width: var(--hex-w);
@@ -1455,34 +1459,51 @@ html, body, #root {
   height: 100%;
   position: relative;
   cursor: pointer;
-  transition: transform 150ms ease;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              filter 200ms ease;
 }
 
-/* Empty cell — slightly smaller for gap effect */
+/* Empty cell — carved recessed slot */
 .hex-cell--empty {
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  background: rgba(255, 255, 255, 0.06);
-  transition: background 150ms, transform 150ms;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.15) 0%,
+      rgba(255, 255, 255, 0.03) 50%,
+      rgba(0, 0, 0, 0.1) 100%
+    );
+  transition: background 200ms, transform 200ms;
 }
 
 .hex-cell--empty:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.04) 100%
+    );
+  transform: scale(1.06);
 }
 
-/* Filled cell — contains stacked hex discs */
+/* Filled cell — gemstone container */
 .hex-cell--filled {
   overflow: visible;
 }
 
 .hex-cell--filled:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.03);
+  filter: brightness(1.08);
 }
 
+/* Match animation — juicy pop with glow */
 .hex-cell--matching {
-  animation: hexPop 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: hexMatchPop 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Individual 3D hex disc (stacked layer) */
+/* ---- 3D Hex Disc (gemstone layer) ---- */
+
 .hex-disc {
   position: absolute;
   left: 0;
@@ -1491,38 +1512,67 @@ html, body, #root {
   height: 100%;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   background: var(--disc-edge);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: top 250ms ease, transform 250ms ease;
 }
 
+/* Top disc — polished gemstone face */
 .hex-disc--top {
-  background: var(--disc-face);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35), inset 0 2px 0 rgba(255, 255, 255, 0.2);
+  background:
+    radial-gradient(
+      ellipse at 40% 30%,
+      rgba(255, 255, 255, 0.35) 0%,
+      transparent 50%
+    ),
+    linear-gradient(
+      180deg,
+      var(--disc-border) 0%,
+      var(--disc-face) 30%,
+      var(--disc-edge) 100%
+    );
 }
 
-@keyframes hexPop {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.15); }
-  100% { transform: scale(1); }
+/* --- Animations --- */
+
+@keyframes hexMatchPop {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  25% {
+    transform: scale(1.2);
+    filter: brightness(1.4);
+  }
+  50% {
+    transform: scale(0.9);
+    filter: brightness(1.1);
+  }
+  75% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
 }
 
 @media (max-width: 420px) {
-  .hex-board { --hex-w: 50px; }
+  .hex-board { --hex-w: 48px; }
 }
 
-/* Tile Queue */
+/* ---- Tile Queue ---- */
 
 .tile-queue {
   display: flex;
-  gap: 24px;
+  gap: 20px;
   align-items: flex-end;
   justify-content: center;
-  padding: 16px 0;
+  padding: 20px 16px;
 }
 
 .tile-queue__tile {
-  opacity: 0.45;
-  transform: scale(0.75);
-  transition: opacity 150ms, transform 150ms;
+  opacity: 0.4;
+  transform: scale(0.72);
+  transition: all 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .tile-queue__tile--current {
@@ -1532,8 +1582,8 @@ html, body, #root {
 
 .tile-queue__hex-stack {
   position: relative;
-  width: 48px;
-  height: calc(48px * 1.155 + 12px);
+  width: 50px;
+  height: calc(50px * 1.155 + 14px);
 }
 
 .tile-queue__hex-disc {
@@ -1541,18 +1591,27 @@ html, body, #root {
   left: 0;
   top: var(--disc-depth, 0px);
   width: 100%;
-  height: calc(48px * 1.155);
+  height: calc(50px * 1.155);
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   background: var(--disc-edge);
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
 }
 
 .tile-queue__hex-disc--top {
-  background: var(--disc-face);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  background:
+    radial-gradient(
+      ellipse at 40% 30%,
+      rgba(255, 255, 255, 0.3) 0%,
+      transparent 50%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--disc-face), white 15%) 0%,
+      var(--disc-face) 40%,
+      var(--disc-edge) 100%
+    );
 }
 
-/* Menu preview */
+/* ---- Menu Preview ---- */
 
 .hex-preview-grid {
   --pw: 20px;
