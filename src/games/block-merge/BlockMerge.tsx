@@ -92,6 +92,7 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
           board={state.board}
           onCellClick={placeBlock}
           lastMerges={state.lastMerges}
+          lastDrop={state.lastDrop}
           disabled={state.gameOver}
         />
         <ParticleCanvas ref={particleRef} width={boardSize.width} height={boardSize.height} />

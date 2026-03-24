@@ -171,10 +171,36 @@ export function checkGameOver(board: Board): boolean {
 }
 
 /**
- * Weighted random: mostly 2s (70%), some 4s (30%), shifting to 60/40 at high scores.
+ * Generate next block value. The minimum offered value gradually increases
+ * as the player's score rises, phasing out lower values over time.
+ *
+ * Score thresholds for minimum value increases:
+ * 0-199: 2s and 4s (70/30)
+ * 200-499: 2s become rarer (50/50), 4s common
+ * 500-999: mostly 4s (30/70), occasional 2
+ * 1000-1999: 4s and 8s, no more 2s
+ * 2000+: 4s, 8s, occasional 16
  */
 export function generateNextValue(score: number): MergeValue {
-  const highScore = score >= 1000
-  const twoProbability = highScore ? 0.6 : 0.7
-  return Math.random() < twoProbability ? 2 : 4
+  const rand = Math.random()
+
+  if (score >= 2000) {
+    if (rand < 0.15) return 16
+    if (rand < 0.55) return 8
+    return 4
+  }
+  if (score >= 1000) {
+    if (rand < 0.3) return 8
+    return 4
+  }
+  if (score >= 500) {
+    if (rand < 0.3) return 2
+    return 4
+  }
+  if (score >= 200) {
+    if (rand < 0.5) return 2
+    return 4
+  }
+  if (rand < 0.7) return 2
+  return 4
 }

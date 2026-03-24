@@ -1,16 +1,17 @@
 import { useMemo } from 'react'
 import MergeCell from './MergeCell'
-import type { Board, Cell, MergeResult } from '../game/types'
+import type { Board, Cell, MergeResult, DropInfo } from '../game/types'
 import { BOARD_SIZE } from '../game/types'
 
 type MergeBoardProps = {
   board: Board
   onCellClick: (position: Cell) => void
   lastMerges?: MergeResult[] | null
+  lastDrop?: DropInfo | null
   disabled?: boolean
 }
 
-export default function MergeBoard({ board, onCellClick, lastMerges, disabled }: MergeBoardProps) {
+export default function MergeBoard({ board, onCellClick, lastMerges, lastDrop, disabled }: MergeBoardProps) {
   const mergingSet = useMemo(() => {
     if (!lastMerges || lastMerges.length === 0) return new Set<string>()
     const set = new Set<string>()
@@ -27,11 +28,15 @@ export default function MergeBoard({ board, onCellClick, lastMerges, disabled }:
         const col = i % BOARD_SIZE
         const value = board[row][col]
         const isMerging = mergingSet.has(`${row},${col}`)
+        const isDropping = lastDrop && lastDrop.col === col && row === lastDrop.toRow && !isMerging
+        const dropDist = isDropping ? lastDrop.toRow : 0
         return (
           <MergeCell
             key={`${row}-${col}`}
             value={value}
-            highlight={isMerging}
+            merging={isMerging}
+            dropping={!!isDropping}
+            dropDistance={dropDist}
             onClick={disabled ? undefined : () => onCellClick({ row, col })}
           />
         )

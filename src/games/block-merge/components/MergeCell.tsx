@@ -4,24 +4,34 @@ import { VALUE_COLORS } from '../game/types'
 
 type MergeCellProps = {
   value: MergeValue | null
-  highlight?: boolean
+  merging?: boolean
+  dropping?: boolean
+  dropDistance?: number
   onClick?: () => void
 }
 
-export default memo(function MergeCell({ value, highlight, onClick }: MergeCellProps) {
+export default memo(function MergeCell({ value, merging, dropping, dropDistance, onClick }: MergeCellProps) {
   if (!value) {
     return (
-      <div
-        className={`merge-cell merge-cell--empty${highlight ? ' merge-cell--highlight' : ''}`}
-        onClick={onClick}
-      />
+      <div className="merge-cell merge-cell--empty" onClick={onClick} />
     )
+  }
+
+  const classes = [
+    'merge-cell',
+    merging && 'merge-cell--merging',
+    dropping && 'merge-cell--dropping',
+  ].filter(Boolean).join(' ')
+
+  const style: React.CSSProperties = {
+    backgroundColor: VALUE_COLORS[value],
+    ...(dropping && dropDistance ? { '--drop-distance': `${dropDistance}` } as React.CSSProperties : {}),
   }
 
   return (
     <div
-      className={`merge-cell${highlight ? ' merge-cell--merging' : ''}`}
-      style={{ backgroundColor: VALUE_COLORS[value] }}
+      className={classes}
+      style={style}
       onClick={onClick}
       data-value={value}
     >

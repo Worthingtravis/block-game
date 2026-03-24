@@ -18,6 +18,13 @@ export type MergeResult = {
   chainDepth: number
 }
 
+export type DropInfo = {
+  col: number
+  fromRow: number
+  toRow: number
+  value: MergeValue
+}
+
 export type GameState = {
   board: Board
   queue: [MergeValue, MergeValue, MergeValue]
@@ -28,6 +35,7 @@ export type GameState = {
   totalMerges: number
   gameOver: boolean
   lastMerges: MergeResult[] | null
+  lastDrop: DropInfo | null
 }
 
 export type GameAction =

@@ -16,6 +16,7 @@ function buildGameState(overrides: Partial<GameState> = {}): GameState {
     totalMerges: 0,
     gameOver: false,
     lastMerges: null,
+    lastDrop: null,
     ...overrides,
   }
 }
@@ -82,6 +83,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         totalMerges: state.totalMerges + merges.length,
         gameOver,
         lastMerges: merges.length > 0 ? merges : null,
+        lastDrop: { col, fromRow: 0, toRow: dropRow, value: currentValue },
       }
     }
 
