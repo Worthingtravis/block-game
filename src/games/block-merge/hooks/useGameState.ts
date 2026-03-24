@@ -78,22 +78,40 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       const col = action.col
       const value = state.queue[0]
-      const { board, row } = dropBlock(state.board, col, value)
+      const { board, row, instantMerge } = dropBlock(state.board, col, value)
       if (row < 0) return state
+
+      let score = state.score
+      let highestTile = state.highestTile
+      let totalMerges = state.totalMerges
+
+      if (instantMerge) {
+        const mergedValue = value * 2
+        score += calculateMergePoints(value, 2)
+        totalMerges += 1
+        if (mergedValue > highestTile) highestTile = mergedValue
+      }
+
+      let highScore = state.highScore
+      if (score > highScore) { highScore = score; saveHighScore(highScore) }
 
       const nextQueue: [number, number, number] = [
         state.queue[1],
         state.queue[2],
-        generateNextValue(state.score, board),
+        generateNextValue(score, board),
       ]
 
       return {
         ...state,
         board,
         queue: nextQueue,
+        score,
+        highScore,
+        highestTile,
+        totalMerges,
         phase: 'dropping',
         currentMerge: null,
-        chainStep: 0,
+        chainStep: instantMerge ? 1 : 0,
         dropCell: { row, col },
       }
     }
