@@ -3,13 +3,13 @@ import type { Settings } from '../../shared/useSettings'
 
 export type { MatchResult }
 
-/** Gemstone color palette — vibrant saturated tones with depth */
+/** Gemstone color palette — high contrast between face and edge for visible depth */
 export const HEX_COLORS: Record<HexColor, { face: string; edge: string; border: string; glow: string }> = {
-  blue:   { face: '#4C9EFF', edge: '#2A6CC7', border: '#7AB8FF', glow: 'rgba(76, 158, 255, 0.4)' },
-  red:    { face: '#FF4757', edge: '#C0392B', border: '#FF6B7A', glow: 'rgba(255, 71, 87, 0.4)' },
-  yellow: { face: '#FFD32A', edge: '#C9A800', border: '#FFE066', glow: 'rgba(255, 211, 42, 0.4)' },
-  green:  { face: '#2ED573', edge: '#1E8C4C', border: '#5AE896', glow: 'rgba(46, 213, 115, 0.4)' },
-  purple: { face: '#A55EEA', edge: '#7C3ABA', border: '#C184F0', glow: 'rgba(165, 94, 234, 0.4)' },
+  blue:   { face: '#4C9EFF', edge: '#1A4F8A', border: '#7AB8FF', glow: 'rgba(76, 158, 255, 0.5)' },
+  red:    { face: '#FF4757', edge: '#8B1A1A', border: '#FF6B7A', glow: 'rgba(255, 71, 87, 0.5)' },
+  yellow: { face: '#FFD32A', edge: '#8A7200', border: '#FFE066', glow: 'rgba(255, 211, 42, 0.5)' },
+  green:  { face: '#2ED573', edge: '#0E5C2E', border: '#5AE896', glow: 'rgba(46, 213, 115, 0.5)' },
+  purple: { face: '#A55EEA', edge: '#4A1A7A', border: '#C184F0', glow: 'rgba(165, 94, 234, 0.5)' },
 }
 
 /** Pre-computed cell data for rendering */

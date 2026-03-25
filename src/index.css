@@ -1610,26 +1610,39 @@ html, body, #root {
   width: 100%;
   height: 100%;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  background: var(--disc-edge);
-  /* Real 3D depth — each layer sits behind the one above */
+  /* Edge layers: gradient from medium to dark to simulate thickness shading */
+  background:
+    linear-gradient(
+      180deg,
+      var(--disc-edge) 0%,
+      color-mix(in srgb, var(--disc-edge), black 30%) 60%,
+      color-mix(in srgb, var(--disc-edge), black 50%) 100%
+    );
   transform: translateZ(calc(var(--disc-depth, 0px) * -0.5));
   transition: top 250ms ease, transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Top disc — polished gemstone face */
+/* Top disc — polished gemstone face with border ring and highlight */
 .hex-disc--top {
   background:
+    /* Specular highlight — glass-like reflection */
     radial-gradient(
-      ellipse at 40% 30%,
-      rgba(255, 255, 255, 0.35) 0%,
-      transparent 50%
+      ellipse at 35% 25%,
+      rgba(255, 255, 255, 0.45) 0%,
+      rgba(255, 255, 255, 0.1) 30%,
+      transparent 55%
     ),
+    /* Face gradient: light border → face → darker edge for depth */
     linear-gradient(
-      180deg,
+      175deg,
       var(--disc-border) 0%,
-      var(--disc-face) 30%,
+      var(--disc-face) 25%,
+      var(--disc-face) 60%,
+      color-mix(in srgb, var(--disc-face), var(--disc-edge) 40%) 85%,
       var(--disc-edge) 100%
     );
+  /* Thin shadow under the top disc to lift it from the stack */
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
 }
 
 /* --- Animations --- */
@@ -1699,22 +1712,28 @@ html, body, #root {
   width: 100%;
   height: calc(50px * 1.155);
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  background: var(--disc-edge);
+  background:
+    linear-gradient(
+      180deg,
+      var(--disc-edge) 0%,
+      color-mix(in srgb, var(--disc-edge), black 35%) 100%
+    );
 }
 
 .tile-queue__hex-disc--top {
   background:
     radial-gradient(
-      ellipse at 40% 30%,
-      rgba(255, 255, 255, 0.3) 0%,
+      ellipse at 35% 25%,
+      rgba(255, 255, 255, 0.4) 0%,
       transparent 50%
     ),
     linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--disc-face), white 15%) 0%,
-      var(--disc-face) 40%,
+      175deg,
+      color-mix(in srgb, var(--disc-face), white 12%) 0%,
+      var(--disc-face) 30%,
       var(--disc-edge) 100%
     );
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25));
 }
 
 /* ---- Menu Preview ---- */
