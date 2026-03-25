@@ -75,7 +75,7 @@ export default function ClaireWorld({ onBack }: ClaireWorldProps) {
 
       {/* Board */}
       <div className="board-wrapper">
-        <ClaireBoard board={state.board} onCellClick={handleCellClick} clearOrigin={state.lastClearOrigin} />
+        <ClaireBoard board={state.board} onCellClick={handleCellClick} />
       </div>
 
       {/* Bottom controls */}

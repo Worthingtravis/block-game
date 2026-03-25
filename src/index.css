@@ -1969,18 +1969,27 @@ html, body, #root {
   background: var(--bg-board);
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-  /* Subtle isometric tilt — enough for depth feel, not enough to break click targets */
-  transform: perspective(900px) rotateX(8deg);
-  transform-origin: center 70%;
+  /* Isometric tilt — visible depth without breaking click targets */
+  transform: perspective(800px) rotateX(15deg);
+  transform-origin: center 65%;
 }
 
 /* ----- Cells ----- */
 .claire-cell {
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  transition: filter 0.12s ease, box-shadow 0.12s ease;
   position: relative;
   aspect-ratio: 1;
+}
+
+.claire-cell:hover:not(.claire-cell--empty) {
+  filter: brightness(1.2);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+
+.claire-cell:active:not(.claire-cell--empty) {
+  filter: brightness(0.9);
 }
 
 .claire-cell--empty {
