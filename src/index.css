@@ -1969,10 +1969,9 @@ html, body, #root {
   background: var(--bg-board);
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-  /* 45-degree isometric view */
-  transform: perspective(600px) rotateX(25deg);
-  transform-origin: center 60%;
-  transform-style: preserve-3d;
+  /* Subtle isometric tilt — enough for depth feel, not enough to break click targets */
+  transform: perspective(900px) rotateX(8deg);
+  transform-origin: center 70%;
 }
 
 /* ----- Cells ----- */
