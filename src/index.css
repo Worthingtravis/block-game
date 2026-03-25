@@ -2043,15 +2043,17 @@ html, body, #root {
   flex-shrink: 0;
 }
 
-.claire-bottom-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.claire-streak {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cw-amber);
+  white-space: nowrap;
 }
 
-.claire-actions-remaining {
-  font-size: 12px;
-  color: var(--text-secondary);
+.claire-multiplier-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cw-violet);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }

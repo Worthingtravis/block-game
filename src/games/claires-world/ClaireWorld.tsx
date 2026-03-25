@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import ClaireStrip from './components/ClaireStrip'
 import ClaireBoard from './components/ClaireBoard'
 import ModeIndicator from './components/ModeIndicator'
-import MoodBar from './components/MoodBar'
+import ScoreDisplay from '../block-shapes/components/ScoreDisplay'
 import { useGameState } from './hooks/useGameState'
 import { useAudio } from './hooks/useAudio'
 import { useIdleDetection } from './hooks/useIdleDetection'
@@ -52,12 +52,11 @@ export default function ClaireWorld({ onBack }: ClaireWorldProps) {
           </svg>
         </button>
 
-        <div className="claire-score-area">
-          <span className="claire-score">{state.score.toLocaleString('en-US')}</span>
-          {state.highScore > 0 && (
-            <span className="claire-high-score">Best: {state.highScore.toLocaleString('en-US')}</span>
-          )}
-        </div>
+        <ScoreDisplay
+          score={state.score}
+          highScore={state.highScore}
+          comboMultiplier={Math.round(state.claireMultiplier * 10) / 10}
+        />
 
         <button
           className="options-btn"
@@ -82,12 +81,10 @@ export default function ClaireWorld({ onBack }: ClaireWorldProps) {
       {/* Bottom controls */}
       <div className="claire-bottom-controls">
         <ModeIndicator mode={state.mode} />
-        <div className="claire-bottom-right">
-          <MoodBar claireMultiplier={state.claireMultiplier} />
-          <span className="claire-actions-remaining">
-            {state.actionsRemaining} left
-          </span>
-        </div>
+        {state.streak > 0 && (
+          <span className="claire-streak">Streak x{state.streak}</span>
+        )}
+        <span className="claire-multiplier-label">{state.claireMultiplier.toFixed(1)}x</span>
       </div>
 
       {/* Game Over overlay */}
