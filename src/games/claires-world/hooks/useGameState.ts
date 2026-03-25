@@ -126,12 +126,11 @@ function handleColorCrush(state: GameState, row: number, col: number): GameState
 
   let newBoard = clearGroup(state.board, group)
   newBoard = applyGravity(newBoard)
-  if (!hasValidMoves(newBoard)) {
-    newBoard = fillEmpty(newBoard, diff.colorCount)
-  }
+  newBoard = fillEmpty(newBoard, diff.colorCount)
 
   const newActionsRemaining = state.actionsRemaining - 1
   const modeComplete = newActionsRemaining <= 0
+  const boardStuck = !hasValidMoves(newBoard) && !modeComplete
 
   const afterState: GameState = {
     ...state,
@@ -154,6 +153,16 @@ function handleColorCrush(state: GameState, row: number, col: number): GameState
       modePhase: 'outro',
       claireMood: 'excited',
       claireMessage: pickDialogue('mode_switch', afterState),
+    }
+  }
+
+  if (boardStuck) {
+    return {
+      ...afterState,
+      gameOver: true,
+      claireMood: 'annoyed',
+      claireMessage: pickDialogue('game_over', afterState),
+      lastAction: 'game_over',
     }
   }
 
@@ -288,7 +297,7 @@ export function useGameState() {
 
   // Auto-step during intro / outro phases (350ms delay)
   useEffect(() => {
-    if (state.modePhase !== 'intro' && state.modePhase !== 'outro') return
+    if (state.modePhase === 'active') return
     const delay = state.modePhase === 'intro' ? INTRO_DELAY_MS : OUTRO_DELAY_MS
     const timer = setTimeout(() => {
       dispatch({ type: 'STEP' })
