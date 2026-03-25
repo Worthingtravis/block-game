@@ -15,12 +15,16 @@ export type MergeResult = {
 
 export type Phase = 'idle' | 'dropping' | 'merging' | 'gravity' | 'levelup'
 
-/** Score thresholds where a value gets removed from the game. */
-export const LEVEL_UP_THRESHOLDS: [number, number][] = [
-  [500, 2],    // At 500 points, remove all 2s
-  [2000, 4],   // At 2000 points, remove all 4s
-  [8000, 8],   // At 8000 points, remove all 8s
-]
+/**
+ * Compute the score threshold at which a given tile value gets removed.
+ * Pattern: 500 * 4^level  (level 0 = value 2, level 1 = value 4, …)
+ * This scales forever — every power-of-2 tile value has a removal threshold.
+ */
+export function getLevelUpThreshold(value: number): number {
+  // value = 2 → level 0, value = 4 → level 1, value = 8 → level 2, …
+  const level = Math.log2(value) - 1
+  return 500 * Math.pow(4, level)
+}
 
 export type GameState = {
   board: Board

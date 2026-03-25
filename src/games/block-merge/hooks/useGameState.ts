@@ -1,6 +1,6 @@
 import { useReducer, useCallback, useEffect, useState, useRef } from 'react'
 import type { GameState, GameAction, Board } from '../game/types'
-import { LEVEL_UP_THRESHOLDS } from '../game/types'
+import { getLevelUpThreshold } from '../game/types'
 import { createEmptyBoard, dropBlock, findAnyMerge, applyMerge, applyGravity, checkGameOver, generateNextValue, purgeValue } from '../game/engine'
 import { calculateMergePoints, calculateChainBonus } from '../game/scoring'
 import { saveGame, loadGame, clearGame, loadHighScore, saveHighScore } from '../persistence'
@@ -65,12 +65,12 @@ function tryMerge(state: GameState, board: Board, prefer?: { row: number; col: n
   }
 }
 
-/** Check if the score has crossed a level-up threshold. */
+/** Check if the score has crossed a level-up threshold (scales forever). */
 function checkLevelUp(state: GameState): { removedValue: number; newMinValue: number } | null {
-  for (const [threshold, value] of LEVEL_UP_THRESHOLDS) {
-    if (state.score >= threshold && state.minValue <= value) {
-      return { removedValue: value, newMinValue: value * 2 }
-    }
+  const currentMin = state.minValue
+  const threshold = getLevelUpThreshold(currentMin)
+  if (state.score >= threshold) {
+    return { removedValue: currentMin, newMinValue: currentMin * 2 }
   }
   return null
 }

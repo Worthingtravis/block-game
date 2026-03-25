@@ -141,14 +141,9 @@ export function purgeValue(board: Board, value: number): Board {
   return board.map(row => row.map(cell => cell === value ? null : cell))
 }
 
-/** Generate next block value, respecting the minimum value. */
-export function generateNextValue(score: number, minValue = 2): number {
+/** Generate next block value, respecting the minimum value.
+ *  Spawns minValue (60%) or minValue*2 (40%) — scales forever. */
+export function generateNextValue(_score: number, minValue = 2): number {
   const rand = Math.random()
-  if (minValue >= 16) return rand < 0.5 ? 16 : 32
-  if (minValue >= 8) return rand < 0.3 ? 16 : rand < 0.7 ? 8 : minValue
-  if (minValue >= 4) return rand < 0.3 ? 8 : 4
-  // minValue is 2
-  if (score >= 500) return rand < 0.3 ? 2 : 4
-  if (score >= 200) return rand < 0.5 ? 2 : 4
-  return rand < 0.7 ? 2 : 4
+  return rand < 0.6 ? minValue : minValue * 2
 }
