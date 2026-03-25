@@ -59,20 +59,20 @@ export function clearGroup(board: Board, cells: [number, number][]): Board {
 export function applyGravity(board: Board): Board {
   const newBoard = board.map(row => row.map(cell => ({ ...cell })))
   for (let col = 0; col < BOARD_SIZE; col++) {
-    // Collect non-null cells from bottom up
+    // Collect non-null cells top-to-bottom (preserves relative order)
     const filled: ClaireCell[] = []
-    for (let row = BOARD_SIZE - 1; row >= 0; row--) {
+    for (let row = 0; row < BOARD_SIZE; row++) {
       if (newBoard[row][col].color !== null || newBoard[row][col].obstacle) {
-        filled.push(newBoard[row][col])
+        filled.push({ ...newBoard[row][col] })
       }
     }
-    // Place from the bottom
-    for (let row = BOARD_SIZE - 1; row >= 0; row--) {
-      const filledIndex = BOARD_SIZE - 1 - row
-      if (filledIndex < filled.length) {
-        newBoard[row][col] = { ...filled[filledIndex] }
-      } else {
+    // Place them at the bottom of the column
+    const emptyCount = BOARD_SIZE - filled.length
+    for (let row = 0; row < BOARD_SIZE; row++) {
+      if (row < emptyCount) {
         newBoard[row][col] = emptyCell()
+      } else {
+        newBoard[row][col] = filled[row - emptyCount]
       }
     }
   }
