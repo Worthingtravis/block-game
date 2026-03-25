@@ -54,6 +54,9 @@ export type GameState = {
   gameOver: boolean
   claireMood: ClaireMood
   claireMessage: string | null
+  // Last clear info for cascading animation
+  lastClearOrigin: { row: number; col: number } | null
+  lastClearCells: [number, number][] | null
   // Color Crush specific
   selectedGroup: number[] | null
   // Pattern Echo specific

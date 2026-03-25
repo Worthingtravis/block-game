@@ -8,11 +8,10 @@ type Props = {
   row: number
   col: number
   onCellClick: (row: number, col: number) => void
+  entryDelay?: number
 }
 
-const springy = { type: 'spring' as const, stiffness: 400, damping: 22 }
-
-const ClaireCell = memo(function ClaireCell({ cell, row, col, onCellClick }: Props) {
+const ClaireCell = memo(function ClaireCell({ cell, row, col, onCellClick, entryDelay = 0 }: Props) {
   const { color, obstacle, highlighted } = cell
 
   let className = 'claire-cell'
@@ -27,15 +26,16 @@ const ClaireCell = memo(function ClaireCell({ cell, row, col, onCellClick }: Pro
       className={className}
       style={bg ? { backgroundColor: bg } : undefined}
       onClick={() => onCellClick(row, col)}
-      // Drop-in animation for colored cells
-      initial={color ? { y: -40, opacity: 0, scale: 0.8 } : false}
+      initial={color ? { y: -(20 + row * 8), opacity: 0, scale: 0.7 } : false}
       animate={{ y: 0, opacity: 1, scale: 1 }}
       whileHover={!obstacle && !!color ? { scale: 1.1, zIndex: 2 } : undefined}
       whileTap={!obstacle && !!color ? { scale: 0.9 } : undefined}
-      transition={springy}
-      aria-label={
-        obstacle ? 'obstacle' : color ? `${color} cell` : 'empty cell'
-      }
+      transition={{
+        type: 'spring',
+        stiffness: 350,
+        damping: 20,
+        delay: entryDelay,
+      }}
     />
   )
 })
