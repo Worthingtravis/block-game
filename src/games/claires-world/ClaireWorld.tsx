@@ -82,10 +82,12 @@ export default function ClaireWorld({ onBack }: ClaireWorldProps) {
       {/* Bottom controls */}
       <div className="claire-bottom-controls">
         <ModeIndicator mode={state.mode} />
-        <MoodBar claireMultiplier={state.claireMultiplier} />
-        <span className="claire-actions-remaining">
-          {state.actionsRemaining} moves left
-        </span>
+        <div className="claire-bottom-right">
+          <MoodBar claireMultiplier={state.claireMultiplier} />
+          <span className="claire-actions-remaining">
+            {state.actionsRemaining} left
+          </span>
+        </div>
       </div>
 
       {/* Game Over overlay */}
