@@ -70,9 +70,9 @@
 }
 
 html, body, #root {
-  height: 100%;
+  min-height: 100%;
   width: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
   background: var(--bg-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: var(--text-primary);
@@ -478,8 +478,6 @@ html, body, #root {
   margin: 0 auto;
   padding: 40px 20px 60px;
   position: relative;
-  overflow: hidden;
-  min-height: calc(100vh - 50px);
 }
 
 /* ---- Decorative purple accent blocks ---- */
