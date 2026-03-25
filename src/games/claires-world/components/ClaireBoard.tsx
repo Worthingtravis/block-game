@@ -17,7 +17,7 @@ export default function ClaireBoard({ board, onCellClick }: Props) {
       {board.map((row, r) =>
         row.map((cell, c) => (
           <ClaireCell
-            key={`${r}-${c}`}
+            key={`${r}-${c}-${cell.color ?? 'empty'}`}
             cell={cell}
             row={r}
             col={c}
