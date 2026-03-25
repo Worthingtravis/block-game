@@ -11,8 +11,9 @@ import { useSettings } from './shared/useSettings'
 const BlockShapes = lazy(() => import('./games/block-shapes/BlockShapes'))
 const BlockMerge = lazy(() => import('./games/block-merge/BlockMerge'))
 const BlockHex = lazy(() => import('./games/block-hex/BlockHex-connected'))
+const ClaireWorld = lazy(() => import('./games/claires-world/ClaireWorld'))
 
-type Page = 'menu' | 'block-shapes' | 'block-merge' | 'block-hex' | 'leaderboard'
+type Page = 'menu' | 'block-shapes' | 'block-merge' | 'block-hex' | 'claires-world' | 'leaderboard'
 
 /* Mini honeycomb preview for the Hexa Sort menu card */
 const HEX_PREVIEW_ROWS = [
@@ -88,6 +89,14 @@ export default function App() {
     )
   }
 
+  if (activePage === 'claires-world') {
+    return (
+      <Suspense fallback={<div className="game-loading">Loading...</div>}>
+        <ClaireWorld onBack={() => setActivePage('menu')} />
+      </Suspense>
+    )
+  }
+
   if (activePage === 'leaderboard') {
     return (
       <>
@@ -153,6 +162,25 @@ export default function App() {
             <div className="game-card__info">
               <span className="game-card__name">Hexa Sort</span>
               <span className="game-card__desc">Sort colors, chain matches</span>
+            </div>
+          </button>
+
+          <button className="game-card game-card--claire" onClick={() => setActivePage('claires-world')}>
+            <div className="game-card__preview game-card__preview--claire">
+              <div className="claire-card-avatar">
+                <div className="claire-card-avatar__face">
+                  <div className="claire-card-avatar__eyes">
+                    <div className="claire-card-avatar__eye" />
+                    <div className="claire-card-avatar__eye" />
+                  </div>
+                  <div className="claire-card-avatar__mouth" />
+                </div>
+              </div>
+              <div className="claire-card-bubble">"Let's play~"</div>
+            </div>
+            <div className="game-card__info">
+              <span className="game-card__name">Claire's World</span>
+              <span className="game-card__desc">Match colors, ride the vibe</span>
             </div>
           </button>
         </div>

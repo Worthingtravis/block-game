@@ -1755,3 +1755,580 @@ html, body, #root {
   height: var(--ph);
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
+
+/* ===== Claire's World ===== */
+
+/* ----- Color variables ----- */
+:root {
+  --cw-rose:   #F43F5E;
+  --cw-sky:    #38BDF8;
+  --cw-amber:  #F59E0B;
+  --cw-mint:   #34D399;
+  --cw-violet: #A78BFA;
+  --cw-bg:     #1A0A2E;
+  --cw-board:  #2A1A44;
+  --cw-empty:  #3A2A54;
+  --cw-strip-h: 56px;
+}
+
+/* ----- Claire strip ----- */
+.claire-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--cw-strip-h);
+  padding: 0 12px;
+  flex-shrink: 0;
+}
+
+/* ----- Avatar ----- */
+@keyframes claire-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-4px); }
+}
+
+@keyframes claire-manic-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px var(--cw-rose); }
+  50%       { box-shadow: 0 0 12px 4px var(--cw-rose); }
+}
+
+.claire-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--cw-violet), var(--cw-rose));
+  box-shadow: 0 2px 8px rgba(167, 139, 250, 0.4);
+  animation: claire-bounce 2.8s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.claire-avatar--manic {
+  animation: claire-bounce 1.2s ease-in-out infinite, claire-manic-pulse 0.8s ease-in-out infinite;
+}
+
+.claire-avatar__face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.claire-avatar__eyes {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* Eye base */
+.claire-avatar__eye {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+/* Mouth base */
+.claire-avatar__mouth {
+  width: 12px;
+  height: 5px;
+  border-bottom: 2.5px solid rgba(255,255,255,0.9);
+  border-left: 1.5px solid transparent;
+  border-right: 1.5px solid transparent;
+  border-radius: 0 0 10px 10px;
+  transition: all 0.2s ease;
+}
+
+/* neutral: dot eyes, slight smile (default) */
+/* happy: arched eyes */
+.claire-avatar--happy .claire-avatar__eye {
+  width: 6px;
+  height: 3px;
+  border-radius: 4px 4px 0 0;
+  background: #fff;
+}
+.claire-avatar--happy .claire-avatar__mouth {
+  width: 14px;
+  height: 6px;
+  border-radius: 0 0 14px 14px;
+}
+
+/* excited: wider open mouth, star effect via outline */
+.claire-avatar--excited .claire-avatar__eye {
+  width: 6px;
+  height: 6px;
+  background: radial-gradient(circle, #fff 40%, transparent 40%),
+              radial-gradient(circle at 50% 0%, #fff 10%, transparent 10%),
+              radial-gradient(circle at 50% 100%, #fff 10%, transparent 10%),
+              radial-gradient(circle at 0% 50%, #fff 10%, transparent 10%),
+              radial-gradient(circle at 100% 50%, #fff 10%, transparent 10%);
+  border-radius: 0;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+.claire-avatar--excited .claire-avatar__mouth {
+  width: 14px;
+  height: 7px;
+  border-radius: 0 0 8px 8px;
+  border-bottom-width: 0;
+  background: rgba(255,255,255,0.85);
+}
+
+/* manic: huge grin */
+.claire-avatar--manic .claire-avatar__eye {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 4px rgba(255,255,255,0.8);
+}
+.claire-avatar--manic .claire-avatar__mouth {
+  width: 16px;
+  height: 8px;
+  border-radius: 0 0 16px 16px;
+  border-bottom-width: 0;
+  background: rgba(255,255,255,0.9);
+}
+
+/* annoyed: flat mouth, narrowed eyes */
+.claire-avatar--annoyed .claire-avatar__eye {
+  width: 8px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.9);
+}
+.claire-avatar--annoyed .claire-avatar__mouth {
+  width: 12px;
+  height: 0;
+  border-bottom-width: 2.5px;
+  border-radius: 0;
+}
+
+/* ----- Speech bubble ----- */
+.claire-bubble {
+  position: relative;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-primary);
+  max-width: 220px;
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transform: translateX(-4px) scale(0.97);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.claire-bubble--visible {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.claire-bubble--hiding {
+  opacity: 0;
+  transform: translateX(-4px) scale(0.97);
+}
+
+/* Left-pointing triangle toward avatar */
+.claire-bubble::before {
+  content: '';
+  position: absolute;
+  left: -7px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 7px solid transparent;
+  border-right-color: rgba(255, 255, 255, 0.2);
+  border-left: 0;
+}
+
+.claire-bubble__cursor {
+  display: inline-block;
+  margin-left: 1px;
+  animation: claire-cursor-blink 0.7s step-end infinite;
+  color: var(--cw-violet);
+}
+
+@keyframes claire-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ----- Board ----- */
+.claire-board {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 5px;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 8px;
+  background: var(--bg-board);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+
+/* ----- Cells ----- */
+.claire-cell {
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  aspect-ratio: 1;
+}
+
+.claire-cell--empty {
+  background: var(--bg-cell-empty);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+  cursor: default;
+}
+
+.claire-cell--highlighted {
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.8),
+    0 0 12px 4px rgba(167,139,250,0.6);
+  animation: claire-glow-pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes claire-glow-pulse {
+  from { box-shadow: 0 0 0 2px rgba(255,255,255,0.7), 0 0 8px 2px rgba(167,139,250,0.4); }
+  to   { box-shadow: 0 0 0 2px rgba(255,255,255,1),   0 0 18px 6px rgba(167,139,250,0.8); }
+}
+
+.claire-cell--obstacle {
+  background: repeating-linear-gradient(
+    45deg,
+    #555 0px,
+    #555 4px,
+    #444 4px,
+    #444 8px
+  );
+  cursor: not-allowed;
+  border-radius: 6px;
+  opacity: 0.7;
+}
+
+/* ----- Score area ----- */
+.claire-score-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.claire-score {
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+  color: var(--cw-violet);
+  text-shadow: 0 0 12px rgba(167,139,250,0.5);
+}
+
+.claire-high-score {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* ----- Bottom controls ----- */
+.claire-bottom-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.claire-actions-remaining {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ----- Mode indicator pill ----- */
+.claire-mode-indicator {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: capitalize;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.claire-mode-indicator--sky    { background: rgba(56,189,248,0.2);  border-color: rgba(56,189,248,0.5);  color: var(--cw-sky); }
+.claire-mode-indicator--violet { background: rgba(167,139,250,0.2); border-color: rgba(167,139,250,0.5); color: var(--cw-violet); }
+.claire-mode-indicator--mint   { background: rgba(52,211,153,0.2);  border-color: rgba(52,211,153,0.5);  color: var(--cw-mint); }
+.claire-mode-indicator--rose   { background: rgba(244,63,94,0.2);   border-color: rgba(244,63,94,0.5);   color: var(--cw-rose); }
+.claire-mode-indicator--amber  { background: rgba(245,158,11,0.2);  border-color: rgba(245,158,11,0.5);  color: var(--cw-amber); }
+
+/* ----- Mood bar ----- */
+.claire-mood-bar {
+  position: relative;
+  width: 100px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.12);
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+.claire-mood-bar__fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    #888 0%,
+    var(--cw-sky) 25%,
+    var(--cw-mint) 50%,
+    var(--cw-amber) 75%,
+    var(--cw-rose) 100%
+  );
+  transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes claire-mood-pulse {
+  0%, 100% { box-shadow: 0 0 4px 1px rgba(244,63,94,0.6); }
+  50%       { box-shadow: 0 0 10px 4px rgba(244,63,94,0.9); }
+}
+
+.claire-mood-bar__fill--pulse {
+  animation: claire-mood-pulse 0.6s ease-in-out infinite;
+}
+
+.claire-mood-bar__label {
+  position: absolute;
+  right: -36px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ----- Game over overlay ----- */
+.claire-game-over-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 5, 20, 0.88);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fade-in 0.3s ease;
+}
+
+.claire-game-over-panel {
+  background: linear-gradient(160deg, rgba(42,26,68,0.95) 0%, rgba(26,10,46,0.95) 100%);
+  border: 1px solid rgba(167,139,250,0.3);
+  border-radius: 20px;
+  padding: 28px 32px;
+  text-align: center;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.6), 0 0 40px rgba(167,139,250,0.1);
+  max-width: 300px;
+  width: 90%;
+}
+
+.claire-game-over-panel__flavor {
+  font-size: 13px;
+  color: var(--cw-violet);
+  font-style: italic;
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+
+.claire-game-over-panel__title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.claire-game-over-panel__new-best {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cw-amber);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.claire-game-over-panel__score {
+  font-size: 36px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.claire-game-over-panel__score--best {
+  color: var(--cw-amber);
+  text-shadow: 0 0 20px rgba(245,158,11,0.6);
+}
+
+.claire-game-over-panel__high-score {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+.claire-game-over-panel__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ----- Claire buttons ----- */
+.claire-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.claire-btn:active {
+  transform: scale(0.96);
+}
+
+.claire-btn--primary {
+  background: linear-gradient(135deg, var(--cw-violet), var(--cw-rose));
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(167,139,250,0.4);
+}
+
+.claire-btn--primary:hover {
+  box-shadow: 0 6px 20px rgba(167,139,250,0.6);
+}
+
+.claire-btn--secondary {
+  background: rgba(255,255,255,0.1);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.claire-btn--secondary:hover {
+  background: rgba(255,255,255,0.15);
+  color: var(--text-primary);
+}
+
+/* ----- Mode transition wave ----- */
+@keyframes claire-cell-wave {
+  0%   { transform: scale(1); opacity: 1; }
+  40%  { transform: scale(0); opacity: 0; }
+  70%  { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.claire-board--transitioning .claire-cell {
+  animation: claire-cell-wave 0.6s ease-in-out both;
+}
+
+/* Stagger each cell by its grid position */
+.claire-board--transitioning .claire-cell:nth-child(n) {
+  animation-delay: calc(var(--cell-idx, 0) * 0.025s);
+}
+
+/* ----- Menu card — Claire's World ----- */
+.game-card--claire {
+  background: linear-gradient(
+    135deg,
+    rgba(50, 20, 80, 0.9) 0%,
+    rgba(80, 20, 60, 0.9) 100%
+  );
+  border: 1px solid rgba(167,139,250,0.35);
+  box-shadow: 0 4px 20px rgba(167,139,250,0.15);
+}
+
+.game-card--claire:hover {
+  border-color: rgba(167,139,250,0.6);
+  box-shadow: 0 8px 30px rgba(167,139,250,0.3);
+}
+
+.game-card__preview--claire {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(160deg, rgba(42,10,70,0.7) 0%, rgba(70,10,50,0.7) 100%);
+}
+
+/* Mini avatar for menu card */
+.claire-card-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--cw-violet), var(--cw-rose));
+  box-shadow: 0 2px 8px rgba(167,139,250,0.5);
+  position: relative;
+  animation: claire-bounce 2.8s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.claire-card-avatar__face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.claire-card-avatar__eyes {
+  display: flex;
+  gap: 5px;
+}
+
+.claire-card-avatar__eye {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.claire-card-avatar__mouth {
+  width: 10px;
+  height: 4px;
+  border-bottom: 2px solid rgba(255,255,255,0.9);
+  border-radius: 0 0 8px 8px;
+}
+
+.claire-card-bubble {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.85);
+  white-space: nowrap;
+  font-style: italic;
+  position: relative;
+}
+
+.claire-card-bubble::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-right-color: rgba(255,255,255,0.2);
+  border-left: 0;
+}
+

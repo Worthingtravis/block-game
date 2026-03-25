@@ -32,6 +32,10 @@ function getLocalScores(): LeaderboardEntry[] {
   if (hexScore > 0) {
     entries.push({ user_id: 'You', score: hexScore, game_type: 'block-hex', ended_at: '' })
   }
+  const clairesScore = parseInt(localStorage.getItem('claires-world-high-score') || '0', 10)
+  if (clairesScore > 0) {
+    entries.push({ user_id: 'You', score: clairesScore, game_type: 'claires-world', ended_at: '' })
+  }
   return entries
 }
 
