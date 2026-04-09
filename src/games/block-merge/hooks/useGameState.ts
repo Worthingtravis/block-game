@@ -224,12 +224,21 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'USE_BOMB': {
       if (state.phase !== 'bomb-targeting' || state.bombs <= 0) return state
-      const bombed = applyBomb(state.board, action.row, action.col)
+      const { board: bombed, destroyed } = applyBomb(state.board, action.row, action.col)
       const { board: settledBoard } = applyGravity(bombed)
+
+      // Score each destroyed tile at its face value
+      const bombPoints = destroyed.reduce((sum, v) => sum + v, 0)
+      const newScore = state.score + bombPoints
+      let highScore = state.highScore
+      if (newScore > highScore) { highScore = newScore; saveHighScore(highScore) }
+
       return {
         ...state,
         board: settledBoard,
         bombs: state.bombs - 1,
+        score: newScore,
+        highScore,
         phase: 'idle',
       }
     }

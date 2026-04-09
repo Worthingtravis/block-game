@@ -148,17 +148,19 @@ export function generateNextValue(_score: number, minValue = 2): number {
   return rand < 0.6 ? minValue : minValue * 2
 }
 
-/** Clear a 3x3 area centered on (row, col), clamped to board edges. */
-export function applyBomb(board: Board, row: number, col: number): Board {
+/** Clear a 3x3 area centered on (row, col), clamped to board edges. Returns new board and destroyed cell values. */
+export function applyBomb(board: Board, row: number, col: number): { board: Board; destroyed: number[] } {
   const next = board.map(r => [...r])
+  const destroyed: number[] = []
   for (let dr = -1; dr <= 1; dr++) {
     for (let dc = -1; dc <= 1; dc++) {
       const r = row + dr
       const c = col + dc
-      if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+      if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && next[r][c] !== null) {
+        destroyed.push(next[r][c]!)
         next[r][c] = null
       }
     }
   }
-  return next
+  return { board: next, destroyed }
 }
