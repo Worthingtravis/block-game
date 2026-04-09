@@ -8,6 +8,13 @@
       "when": 1774316208071,
       "tag": "0000_stormy_forgotten_one",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1775711347319,
+      "tag": "0001_magenta_magdalene",
+      "breakpoints": true
     }
   ]
 }
