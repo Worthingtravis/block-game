@@ -147,3 +147,18 @@ export function generateNextValue(_score: number, minValue = 2): number {
   const rand = Math.random()
   return rand < 0.6 ? minValue : minValue * 2
 }
+
+/** Clear a 3x3 area centered on (row, col), clamped to board edges. */
+export function applyBomb(board: Board, row: number, col: number): Board {
+  const next = board.map(r => [...r])
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      const r = row + dr
+      const c = col + dc
+      if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+        next[r][c] = null
+      }
+    }
+  }
+  return next
+}

@@ -1,11 +1,13 @@
 import { useReducer, useCallback, useEffect, useState, useRef } from 'react'
 import type { GameState, GameAction, Board } from '../game/types'
 import { getLevelUpThreshold } from '../game/types'
-import { createEmptyBoard, dropBlock, findAnyMerge, applyMerge, applyGravity, checkGameOver, generateNextValue, purgeValue } from '../game/engine'
+import { createEmptyBoard, dropBlock, findAnyMerge, applyMerge, applyGravity, checkGameOver, generateNextValue, purgeValue, applyBomb } from '../game/engine'
 import { calculateMergePoints, calculateChainBonus } from '../game/scoring'
 import { saveGame, loadGame, clearGame, loadHighScore, saveHighScore } from '../persistence'
 
 const STEP_INTERVAL = 350
+const BOMB_STREAK_THRESHOLD = 5
+const BOMB_COOLDOWN_MOVES = 20
 
 function buildGameState(overrides: Partial<GameState> = {}): GameState {
   return {
@@ -22,6 +24,8 @@ function buildGameState(overrides: Partial<GameState> = {}): GameState {
     dropCell: null,
     levelUpRemoved: null,
     minValue: 2,
+    bombs: 0,
+    movesSinceBomb: 0,
     ...overrides,
   }
 }
@@ -76,6 +80,14 @@ function checkLevelUp(state: GameState): { removedValue: number; newMinValue: nu
 }
 
 function settle(state: GameState): GameState {
+  // Award bomb if chain reached threshold and cooldown has passed
+  let bombs = state.bombs
+  let movesSinceBomb = state.movesSinceBomb
+  if (state.chainStep >= BOMB_STREAK_THRESHOLD && movesSinceBomb >= BOMB_COOLDOWN_MOVES) {
+    bombs += 1
+    movesSinceBomb = 0
+  }
+
   // Check for level-up before checking game over
   const levelUp = checkLevelUp(state)
   if (levelUp) {
@@ -96,13 +108,15 @@ function settle(state: GameState): GameState {
       dropCell: null,
       levelUpRemoved: levelUp.removedValue,
       minValue: levelUp.newMinValue,
+      bombs,
+      movesSinceBomb,
     }
   }
 
   const gameOver = checkGameOver(state.board, state.queue[0])
   if (gameOver) clearGame()
 
-  return { ...state, phase: 'idle', currentMerge: null, dropCell: null, gameOver }
+  return { ...state, phase: 'idle', currentMerge: null, dropCell: null, gameOver, bombs, movesSinceBomb }
 }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
@@ -148,6 +162,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         chainStep: instantMerge ? Math.max(state.chainStep, 1) : Math.max(state.chainStep - 1, 0),
         dropCell: { row, col },
         levelUpRemoved: null,
+        movesSinceBomb: state.movesSinceBomb + 1,
       }
     }
 
@@ -197,6 +212,28 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...action.state, highScore: Math.max(state.highScore, action.state.score) }
     }
 
+    case 'ACTIVATE_BOMB': {
+      if (state.phase !== 'idle' || state.bombs <= 0 || state.gameOver) return state
+      return { ...state, phase: 'bomb-targeting' }
+    }
+
+    case 'CANCEL_BOMB': {
+      if (state.phase !== 'bomb-targeting') return state
+      return { ...state, phase: 'idle' }
+    }
+
+    case 'USE_BOMB': {
+      if (state.phase !== 'bomb-targeting' || state.bombs <= 0) return state
+      const bombed = applyBomb(state.board, action.row, action.col)
+      const { board: settledBoard } = applyGravity(bombed)
+      return {
+        ...state,
+        board: settledBoard,
+        bombs: state.bombs - 1,
+        phase: 'idle',
+      }
+    }
+
     default:
       return state
   }
@@ -219,6 +256,18 @@ export function useGameState() {
     dispatch({ type: 'STEP' })
   }, [])
 
+  const activateBomb = useCallback(() => {
+    dispatch({ type: 'ACTIVATE_BOMB' })
+  }, [])
+
+  const cancelBomb = useCallback(() => {
+    dispatch({ type: 'CANCEL_BOMB' })
+  }, [])
+
+  const useBomb = useCallback((row: number, col: number) => {
+    dispatch({ type: 'USE_BOMB', row, col })
+  }, [])
+
   // Auto-step when animating
   useEffect(() => {
     if (state.phase === 'idle' || state.phase === 'levelup') return
@@ -236,5 +285,5 @@ export function useGameState() {
     if (state.phase === 'idle' && !state.gameOver) saveGame(state)
   }, [state.phase, state.gameOver])
 
-  return { state, placeBlock, newGame, dismissLevelUp }
+  return { state, placeBlock, newGame, dismissLevelUp, activateBomb, cancelBomb, useBomb }
 }

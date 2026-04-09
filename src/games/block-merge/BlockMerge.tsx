@@ -17,7 +17,7 @@ type BlockMergeProps = {
 }
 
 export default function BlockMerge({ onBack }: BlockMergeProps) {
-  const { state, placeBlock, newGame, dismissLevelUp } = useGameState()
+  const { state, placeBlock, newGame, dismissLevelUp, activateBomb, cancelBomb, useBomb } = useGameState()
   const { settings, update: updateSettings } = useSettings()
   const boardRef = useRef<HTMLDivElement>(null)
   const particleRef = useRef<ParticleCanvasHandle>(null)
@@ -90,6 +90,7 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
         <MergeBoard
           board={state.board}
           onCellClick={placeBlock}
+          onBombClick={useBomb}
           phase={state.phase}
           currentMerge={state.currentMerge}
           dropCell={state.dropCell}
@@ -99,7 +100,19 @@ export default function BlockMerge({ onBack }: BlockMergeProps) {
         <ParticleCanvas ref={particleRef} width={boardSize.width} height={boardSize.height} />
       </div>
 
-      <NextQueue queue={state.queue} />
+      <div className="bomb-row">
+        <NextQueue queue={state.queue} />
+        {state.bombs > 0 && (
+          <button
+            className={`bomb-btn${state.phase === 'bomb-targeting' ? ' bomb-btn--active' : ''}`}
+            onClick={state.phase === 'bomb-targeting' ? cancelBomb : activateBomb}
+            aria-label={state.phase === 'bomb-targeting' ? 'Cancel bomb' : 'Use bomb'}
+          >
+            <span className="bomb-btn__icon">💣</span>
+            <span className="bomb-btn__count">{state.bombs}</span>
+          </button>
+        )}
+      </div>
 
       {state.phase === 'levelup' && state.levelUpRemoved !== null && (
         <div className="game-over-overlay" onClick={dismissLevelUp}>

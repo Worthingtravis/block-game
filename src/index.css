@@ -1180,6 +1180,26 @@ html, body, #root {
   50% { box-shadow: 0 0 20px rgba(255, 102, 68, 0.6); }
 }
 
+.bomb-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+
+.merge-board--bomb {
+  outline: 2px solid rgba(255, 102, 68, 0.5);
+  outline-offset: 2px;
+  border-radius: 14px;
+}
+
+.merge-cell--bomb-target {
+  outline: 2px solid #ff6644;
+  outline-offset: -2px;
+  background: rgba(255, 102, 68, 0.3) !important;
+  cursor: crosshair !important;
+}
+
 /* ===== Affirmations ===== */
 
 .affirmations-layer {

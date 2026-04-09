@@ -13,7 +13,7 @@ export type MergeResult = {
   groupSize: number
 }
 
-export type Phase = 'idle' | 'dropping' | 'merging' | 'gravity' | 'levelup'
+export type Phase = 'idle' | 'dropping' | 'merging' | 'gravity' | 'levelup' | 'bomb-targeting'
 
 /**
  * Compute the score threshold at which a given tile value gets removed.
@@ -42,6 +42,10 @@ export type GameState = {
   levelUpRemoved: number | null
   /** Minimum block value (values below this have been eliminated) */
   minValue: number
+  /** Number of bombs the player currently has */
+  bombs: number
+  /** Moves since last bomb was awarded (resets on award) */
+  movesSinceBomb: number
 }
 
 export type GameAction =
@@ -49,3 +53,6 @@ export type GameAction =
   | { type: 'STEP' }
   | { type: 'NEW_GAME' }
   | { type: 'LOAD_STATE'; state: GameState }
+  | { type: 'ACTIVATE_BOMB' }
+  | { type: 'CANCEL_BOMB' }
+  | { type: 'USE_BOMB'; row: number; col: number }

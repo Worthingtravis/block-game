@@ -10,6 +10,8 @@ type StoredMergeGame = {
   highestTile: number
   totalMerges: number
   minValue: number
+  bombs: number
+  movesSinceBomb: number
 }
 
 export function saveGame(state: GameState): void {
@@ -21,6 +23,8 @@ export function saveGame(state: GameState): void {
       highestTile: state.highestTile,
       totalMerges: state.totalMerges,
       minValue: state.minValue,
+      bombs: state.bombs,
+      movesSinceBomb: state.movesSinceBomb,
     }
     localStorage.setItem(LOCAL_KEY, JSON.stringify(stored))
   } catch { /* */ }
@@ -38,6 +42,8 @@ export function loadGame(): Partial<GameState> | null {
       highestTile: data.highestTile,
       totalMerges: data.totalMerges,
       minValue: data.minValue ?? 2,
+      bombs: data.bombs ?? 0,
+      movesSinceBomb: data.movesSinceBomb ?? 0,
     }
   } catch { return null }
 }

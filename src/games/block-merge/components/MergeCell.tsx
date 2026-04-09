@@ -6,15 +6,18 @@ type MergeCellProps = {
   merging?: boolean
   dropping?: boolean
   columnHighlight?: boolean
+  bombHighlight?: boolean
   onClick?: () => void
   onMouseEnter?: () => void
 }
 
-export default memo(function MergeCell({ value, merging, dropping, columnHighlight, onClick, onMouseEnter }: MergeCellProps) {
+export default memo(function MergeCell({ value, merging, dropping, columnHighlight, bombHighlight, onClick, onMouseEnter }: MergeCellProps) {
   if (value === null) {
-    const emptyClasses = columnHighlight
-      ? 'merge-cell merge-cell--empty merge-cell--col-hover'
-      : 'merge-cell merge-cell--empty'
+    const emptyClasses = [
+      'merge-cell merge-cell--empty',
+      columnHighlight && 'merge-cell--col-hover',
+      bombHighlight && 'merge-cell--bomb-target',
+    ].filter(Boolean).join(' ')
 
     return (
       <div
@@ -29,6 +32,7 @@ export default memo(function MergeCell({ value, merging, dropping, columnHighlig
     'merge-cell',
     merging && 'merge-cell--merging',
     dropping && 'merge-cell--dropping',
+    bombHighlight && 'merge-cell--bomb-target',
   ].filter(Boolean).join(' ')
 
   const formatted = formatValue(value)
