@@ -32,9 +32,9 @@ export default function MergeBoard({ board, onCellClick, onBombClick, phase, cur
     setHoverCell({ row, col })
   }, [])
 
-  function isInBombRadius(row: number, col: number): boolean {
+  function isBombTarget(row: number, col: number): boolean {
     if (!hoverCell) return false
-    return Math.abs(row - hoverCell.row) <= 1 && Math.abs(col - hoverCell.col) <= 1
+    return row === hoverCell.row && col === hoverCell.col
   }
 
   return (
@@ -51,7 +51,7 @@ export default function MergeBoard({ board, onCellClick, onBombClick, phase, cur
           dropCell.row === row && dropCell.col === col
 
         const columnHighlight = interactive && hoverCol === col && value === null
-        const bombHighlight = bombMode && isInBombRadius(row, col)
+        const bombHighlight = bombMode && isBombTarget(row, col)
 
         return (
           <MergeCell
