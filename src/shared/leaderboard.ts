@@ -1,5 +1,6 @@
 export type LeaderboardEntry = {
   user_id: string
+  user_name: string | null
   score: number
   game_type: string
   ended_at: string
@@ -22,19 +23,19 @@ function getLocalScores(): LeaderboardEntry[] {
   const entries: LeaderboardEntry[] = []
   const shapesScore = parseInt(localStorage.getItem('block-blast-high-score') || '0', 10)
   if (shapesScore > 0) {
-    entries.push({ user_id: 'You', score: shapesScore, game_type: 'block-shapes', ended_at: '' })
+    entries.push({ user_id: 'You', user_name: 'You', score: shapesScore, game_type: 'block-shapes', ended_at: '' })
   }
   const mergeScore = parseInt(localStorage.getItem('block-merge-high-score') || '0', 10)
   if (mergeScore > 0) {
-    entries.push({ user_id: 'You', score: mergeScore, game_type: 'block-merge', ended_at: '' })
+    entries.push({ user_id: 'You', user_name: 'You', score: mergeScore, game_type: 'block-merge', ended_at: '' })
   }
   const hexScore = parseInt(localStorage.getItem('block-hex-high-score') || '0', 10)
   if (hexScore > 0) {
-    entries.push({ user_id: 'You', score: hexScore, game_type: 'block-hex', ended_at: '' })
+    entries.push({ user_id: 'You', user_name: 'You', score: hexScore, game_type: 'block-hex', ended_at: '' })
   }
   const clairesScore = parseInt(localStorage.getItem('claires-world-high-score') || '0', 10)
   if (clairesScore > 0) {
-    entries.push({ user_id: 'You', score: clairesScore, game_type: 'claires-world', ended_at: '' })
+    entries.push({ user_id: 'You', user_name: 'You', score: clairesScore, game_type: 'claires-world', ended_at: '' })
   }
   return entries
 }
@@ -48,7 +49,7 @@ export async function fetchLeaderboard(
     try {
       const { data, error } = await client
         .from('games')
-        .select('user_id,score,game_type,ended_at')
+        .select('user_id,user_name,score,game_type,ended_at')
         .eq('status', 'game_over')
         .eq('game_type', gameType)
         .order('score', { ascending: false })

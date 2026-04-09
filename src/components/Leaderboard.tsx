@@ -64,7 +64,7 @@ export default function Leaderboard({ onBack }: LeaderboardProps) {
                 {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
               </span>
               <span className="leaderboard__player">
-                {entry.user_id === 'You' ? 'You' : entry.user_id.slice(0, 8) + '...'}
+                {entry.user_name || (entry.user_id === 'You' ? 'You' : entry.user_id.slice(0, 8) + '...')}
               </span>
               <span className="leaderboard__score">
                 {entry.score.toLocaleString()}

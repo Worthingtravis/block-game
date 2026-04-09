@@ -31,10 +31,11 @@ function moveToRow(m: DbMove): Record<string, unknown> {
 
 export function createNeonRepository(client: QueryClient): GameRepository {
   return {
-    async findActiveGame(gameType: string): Promise<DbGame | null> {
+    async findActiveGame(gameType: string, userId: string): Promise<DbGame | null> {
       const { data, error } = await client
         .from('games')
         .select('*')
+        .eq('user_id', userId)
         .eq('game_type', gameType)
         .eq('status', 'in_progress')
         .order('updated_at', { ascending: false })
@@ -59,6 +60,8 @@ export function createNeonRepository(client: QueryClient): GameRepository {
     async insertGame(game: DbGame): Promise<void> {
       await client.from('games').insert({
         id: game.id,
+        user_id: game.user_id,
+        user_name: game.user_name,
         game_type: game.game_type,
         status: game.status,
         score: game.score,

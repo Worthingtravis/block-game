@@ -5,6 +5,7 @@ import { pgTable, uuid, text, integer, jsonb, timestamp, unique, index } from 'd
 export const games = pgTable('games', {
   id: uuid().primaryKey().defaultRandom(),
   userId: uuid('user_id').notNull(),
+  userName: text('user_name'),
   gameType: text('game_type').notNull().default('block-shapes'),
   status: text().notNull().default('in_progress'),
   score: integer().notNull().default(0),

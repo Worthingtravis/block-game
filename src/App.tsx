@@ -59,8 +59,9 @@ export default function App() {
 
   const syncService = useMemo(() => {
     if (!session.data || !import.meta.env.VITE_NEON_DATA_API_URL) return null
+    const user = session.data.user
     const repo = createNeonRepository(neonClient as unknown as Parameters<typeof createNeonRepository>[0])
-    return new GameSyncService(repo)
+    return new GameSyncService(repo, user.id, user.name || user.email || null)
   }, [session.data])
 
   const navigate = (page: Page) => setActivePage(page)

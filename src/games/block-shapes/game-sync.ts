@@ -2,6 +2,8 @@ import type { StoredGame, StoredMove, StoredPiece, GameStatus } from './persiste
 
 export type DbGame = {
   id: string
+  user_id: string
+  user_name: string | null
   game_type: string
   status: GameStatus
   score: number
@@ -18,7 +20,7 @@ export type DbMove = {
 }
 
 export interface GameRepository {
-  findActiveGame(gameType: string): Promise<DbGame | null>
+  findActiveGame(gameType: string, userId: string): Promise<DbGame | null>
   findMoves(gameId: string): Promise<DbMove[]>
   insertGame(game: DbGame): Promise<void>
   updateGame(id: string, patch: Partial<DbGame>): Promise<void>
@@ -27,13 +29,17 @@ export interface GameRepository {
 
 export class GameSyncService {
   #repo: GameRepository
-  constructor(repo: GameRepository) {
+  #userId: string
+  #userName: string | null
+  constructor(repo: GameRepository, userId: string, userName: string | null) {
     this.#repo = repo
+    this.#userId = userId
+    this.#userName = userName
   }
 
   async loadActiveGame(): Promise<StoredGame | null> {
     try {
-      const dbGame = await this.#repo.findActiveGame('block-shapes')
+      const dbGame = await this.#repo.findActiveGame('block-shapes', this.#userId)
       if (!dbGame) return null
 
       const dbMoves = await this.#repo.findMoves(dbGame.id)
@@ -60,6 +66,8 @@ export class GameSyncService {
     try {
       await this.#repo.insertGame({
         id: game.id,
+        user_id: this.#userId,
+        user_name: this.#userName,
         game_type: 'block-shapes',
         status: game.status,
         score: game.score,
