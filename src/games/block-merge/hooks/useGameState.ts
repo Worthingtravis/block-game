@@ -233,13 +233,17 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       let highScore = state.highScore
       if (newScore > highScore) { highScore = newScore; saveHighScore(highScore) }
 
+      // Transition to gravity so the STEP loop checks for cascading merges
       return {
         ...state,
         board: settledBoard,
         bombs: state.bombs - 1,
         score: newScore,
         highScore,
-        phase: 'idle',
+        phase: 'gravity',
+        chainStep: 0,
+        currentMerge: null,
+        dropCell: null,
       }
     }
 

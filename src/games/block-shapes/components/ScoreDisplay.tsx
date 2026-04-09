@@ -6,6 +6,13 @@ type ScoreDisplayProps = {
   comboMultiplier: number
 }
 
+function formatScore(n: number): string {
+  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(n >= 10_000_000_000 ? 0 : 1).replace(/\.0$/, '') + 'B'
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(n >= 10_000_000 ? 0 : 1).replace(/\.0$/, '') + 'M'
+  if (n >= 100_000) return (n / 1_000).toFixed(0) + 'K'
+  return n.toLocaleString('en-US')
+}
+
 export default function ScoreDisplay({ score, highScore, comboMultiplier }: ScoreDisplayProps) {
   const [prevScore, setPrevScore] = useState(score)
   const [prevCombo, setPrevCombo] = useState(comboMultiplier)
@@ -37,12 +44,17 @@ export default function ScoreDisplay({ score, highScore, comboMultiplier }: Scor
     <div className="score-display">
       <div>
         <div className="score-display__label">HIGH</div>
-        <div className="score-display__value">{highScore.toLocaleString('en-US')}</div>
+        <div className="score-display__value" title={highScore.toLocaleString('en-US')}>
+          {formatScore(highScore)}
+        </div>
       </div>
       <div>
         <div className="score-display__label score-display__label--main">SCORE</div>
-        <div className={`score-display__value score-display__value--main${scorePopping ? ' score--popping' : ''}`}>
-          {score.toLocaleString('en-US')}
+        <div
+          className={`score-display__value score-display__value--main${scorePopping ? ' score--popping' : ''}`}
+          title={score.toLocaleString('en-US')}
+        >
+          {formatScore(score)}
         </div>
       </div>
       <div>
